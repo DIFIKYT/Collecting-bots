@@ -3,6 +3,10 @@ using UnityEngine;
 
 public class UnitBase : MonoBehaviour
 {
+    private const string CopperName = "Copper";
+    private const string IronName = "Iron";
+    private const string GoldName = "Gold";
+
     [SerializeField] private Unit _unitPrefab;
     [SerializeField] private TextViewer _textViewer;
     [SerializeField] private ButtonManager _buttonManager;
@@ -43,8 +47,22 @@ public class UnitBase : MonoBehaviour
         if (other.TryGetComponent(out Unit unit) && !unit.CanTake)
         {
             Resource resource = unit.GetComponentInChildren<Resource>();
+
             if (resource != null)
             {
+                switch (resource.Name)
+                {
+                    case CopperName:
+                        _copperCount++;
+                        break;
+                    case IronName:
+                        _ironCount++;
+                        break;
+                    case GoldName:
+                        _goldCount++;
+                        break;
+                }
+
                 _resourceSpawner.ReturnToPool(resource);
                 resource.SetIsTaked(false);
                 resource.SetSelectedTarget(false);
@@ -64,9 +82,10 @@ public class UnitBase : MonoBehaviour
             if (!resource.IsSelectedTarget)
             {
                 _foundResources.Add(resource);
-                Debug.Log($"{resource.Name} distance from base: {Vector3.Distance(transform.position, resource.transform.position)}");
             }
         }
+
+        _textViewer.ChangeFoundResources(_foundResources);
     }
 
     private void SendUnitToResource()
@@ -83,6 +102,8 @@ public class UnitBase : MonoBehaviour
             _foundResources.RemoveAt(0);
             freeUnit.SetBusy(true);
         }
+
+        _textViewer.ChangeUnitsInfo(_units);
     }
 
     private Unit GetAvailableUnit()
@@ -100,5 +121,7 @@ public class UnitBase : MonoBehaviour
     private void AddUnit(Unit unit)
     {
         _units.Add(unit);
+
+        _textViewer.ChangeUnitsInfo(_units);
     }
 }
