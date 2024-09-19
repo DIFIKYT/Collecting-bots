@@ -34,6 +34,9 @@ public class UnitBase : MonoBehaviour
         _buttonManager.ScanButton.onClick.RemoveListener(ScanForResources);
         _buttonManager.SendUnitToResourceButton.onClick.RemoveListener(SendUnitToResource);
         _unitSpawner.UnitSpawned -= AddUnit;
+
+        foreach (Unit unit in _units)
+            unit.WasFreed -= OnWasFreed;
     }
 
     private void Start()
@@ -54,12 +57,15 @@ public class UnitBase : MonoBehaviour
                 {
                     case CopperName:
                         _copperCount++;
+                        _textViewer.ChangeCopperCount(_copperCount);
                         break;
                     case IronName:
                         _ironCount++;
+                        _textViewer.ChangeIronCount(_ironCount);
                         break;
                     case GoldName:
                         _goldCount++;
+                        _textViewer.ChangeGoldCount(_goldCount);
                         break;
                 }
 
@@ -79,10 +85,9 @@ public class UnitBase : MonoBehaviour
         foreach (Collider collider in colliders)
         {
             Resource resource = collider.GetComponent<Resource>();
-            if (!resource.IsSelectedTarget)
-            {
+
+            if (resource.IsSelectedTarget != true)
                 _foundResources.Add(resource);
-            }
         }
 
         _textViewer.ChangeFoundResources(_foundResources);
@@ -115,13 +120,19 @@ public class UnitBase : MonoBehaviour
                 return unit;
             }
         }
+
         return null;
     }
 
     private void AddUnit(Unit unit)
     {
         _units.Add(unit);
+        unit.WasFreed += OnWasFreed;
+        _textViewer.ChangeUnitsInfo(_units);
+    }
 
+    private void OnWasFreed(Unit unit)
+    {
         _textViewer.ChangeUnitsInfo(_units);
     }
 }

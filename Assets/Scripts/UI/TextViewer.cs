@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using DG.Tweening;
 
 public class TextViewer : MonoBehaviour
 {
@@ -16,7 +15,6 @@ public class TextViewer : MonoBehaviour
         _copperCount.text = "Copper count: 0";
         _ironCount.text = "Iron count: 0";
         _goldCount.text = "Gold count: 0";
-        _foundResources.text = "Found resources: ";
         _unitsInfo.text = "Free units: 3\nBusy units: 0";
     }
 
@@ -37,10 +35,12 @@ public class TextViewer : MonoBehaviour
 
     public void ChangeFoundResources(List<Resource> findResources)
     {
-        foreach(Resource resource in findResources)
+        _foundResources.text = null;
+
+        foreach (Resource resource in findResources)
         {
             _foundResources.text += $"\n{resource.Name}: distance from base " +
-                $"{Mathf.Abs(Vector3.Distance(transform.position, resource.transform.position))}";
+                $"{Mathf.Round(Vector3.Distance(transform.position, resource.transform.position))}";
         }
     }
 
@@ -49,9 +49,9 @@ public class TextViewer : MonoBehaviour
         int freeUnits = 0;
         int busyUnits = 0;
 
-        foreach(Unit unit in units)
+        foreach (Unit unit in units)
         {
-            if(unit.IsBusy)
+            if (unit.IsBusy)
             {
                 busyUnits++;
             }

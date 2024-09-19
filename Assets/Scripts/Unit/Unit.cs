@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using System;
 
 public class Unit : MonoBehaviour
 {
@@ -7,6 +8,8 @@ public class Unit : MonoBehaviour
 
     [SerializeField] private float _moveSpeed;
     [SerializeField] private Vector3 _basePosition;
+
+    public event Action<Unit> WasFreed;
 
     private Vector3 _startPosition;
     private bool _isBusy = false;
@@ -44,6 +47,7 @@ public class Unit : MonoBehaviour
                             transform.DOMove(_startPosition, toStartDuration).SetEase(Ease.Linear).OnComplete(() =>
                             {
                                 _isBusy = false;
+                                WasFreed?.Invoke(this);
                             });
                         });
                     });
