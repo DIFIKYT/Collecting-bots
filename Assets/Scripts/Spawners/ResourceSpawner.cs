@@ -33,6 +33,11 @@ public class ResourceSpawner : MonoBehaviour
         StartCoroutine(SpawnCoroutine());
     }
 
+    public void ReturnToPool(Resource resource)
+    {
+        _pool.Release(resource);
+    }
+
     private Resource Create()
     {
         Resource resource = Instantiate(_resourcePrefabs[Random.Range(0, _resourcePrefabs.Count)], transform);
@@ -48,17 +53,13 @@ public class ResourceSpawner : MonoBehaviour
 
     private void OnRelease(Resource resource)
     {
+        resource.transform.SetParent(transform, worldPositionStays: false);
         resource.gameObject.SetActive(false);
     }
 
     private void Destroy(Resource resource)
     {
         Destroy(resource.gameObject);
-    }
-
-    private void ReturnToPool(Resource resource)
-    {
-        _pool.Release(resource);
     }
 
     private Vector3 GetSpawnPosition()
