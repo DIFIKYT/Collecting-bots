@@ -1,13 +1,12 @@
 using UnityEngine;
-using DG.Tweening;
 using System;
 
+[RequireComponent(typeof(UnitMover))]
 public class Unit : MonoBehaviour
 {
-    private const float RotateDuration = 0.5f;
-
     [SerializeField] private float _moveSpeed;
     [SerializeField] private Vector3 _basePosition;
+    [SerializeField] private UnitMover _unitMover;
 
     public event Action<Unit> WasFreed;
 
@@ -27,32 +26,15 @@ public class Unit : MonoBehaviour
     {
         _isBusy = true;
 
-        float toTargetDuration = Vector3.Distance(transform.position, targetPosition) / _moveSpeed;
-        float toBaseDuration = Vector3.Distance(targetPosition, _basePosition) / _moveSpeed;
-        float toStartDuration = Vector3.Distance(_basePosition, _startPosition) / _moveSpeed;
-
         targetPosition.y = _startPosition.y;
         _basePosition.y = _startPosition.y;
 
-        transform.DOLookAt(targetPosition, RotateDuration).OnComplete(() =>
+        MovementData movementData = new(transform, targetPosition, _basePosition, _startPosition, _moveSpeed);
+
+        _unitMover.MoveQueue(movementData, () =>
         {
-            transform.DOMove(targetPosition, toTargetDuration).SetEase(Ease.Linear).OnComplete(() =>
-            {
-                transform.DOLookAt(_basePosition, RotateDuration).OnComplete(() =>
-                {
-                    transform.DOMove(_basePosition, toBaseDuration).SetEase(Ease.Linear).OnComplete(() =>
-                    {
-                        transform.DOLookAt(_startPosition, RotateDuration).OnComplete(() =>
-                        {
-                            transform.DOMove(_startPosition, toStartDuration).SetEase(Ease.Linear).OnComplete(() =>
-                            {
-                                _isBusy = false;
-                                WasFreed?.Invoke(this);
-                            });
-                        });
-                    });
-                });
-            });
+            _isBusy = false;
+            WasFreed?.Invoke(this);
         });
     }
 

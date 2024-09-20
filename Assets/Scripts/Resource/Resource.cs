@@ -8,6 +8,7 @@ public class Resource : MonoBehaviour
 
     private bool _isTaked = false;
     private bool _isSelectedTarget = false;
+    private const float ResourceOffsetDistance = 1.5f;
 
     public bool IsSelectedTarget => _isSelectedTarget;
     public string Name => _name;
@@ -19,15 +20,12 @@ public class Resource : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_isTaked == false)
+        if (!_isTaked)
         {
-            if (_isSelectedTarget)
+            if (_isSelectedTarget && other.TryGetComponent(out Unit unit))
             {
-                if (other.TryGetComponent(out Unit unit))
-                {
-                    _isTaked = true;
-                    BecomfChildToUnit(this, unit);
-                }
+                _isTaked = true;
+                BecomeChildToUnit(this, unit);
             }
         }
     }
@@ -42,13 +40,13 @@ public class Resource : MonoBehaviour
         _isTaked = isTaked;
     }
 
-    private void BecomfChildToUnit(Resource resource, Unit unit)
+    private void BecomeChildToUnit(Resource resource, Unit unit)
     {
         if (unit.CanTake)
         {
             unit.SetCanTake(false);
             resource.transform.SetParent(unit.transform, worldPositionStays: false);
-            Vector3 offset = unit.transform.position + unit.transform.forward * 1.5f;
+            Vector3 offset = unit.transform.position + unit.transform.forward * ResourceOffsetDistance;
             resource.transform.SetPositionAndRotation(offset, unit.transform.rotation);
         }
     }

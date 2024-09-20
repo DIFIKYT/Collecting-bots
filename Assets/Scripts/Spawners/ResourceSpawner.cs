@@ -66,17 +66,14 @@ public class ResourceSpawner : MonoBehaviour
     {
         Vector3 currentSpawnPosition;
         bool isPositionFree;
-        float halfScaleXGround;
-        float halfScaleZGround;
         float randomXPosition;
         float randomZPosition;
         float lengthRadiusCheck = 1f;
+        float halfScaleXGround = _ground.transform.localScale.x / ScaleDivisionFactor;
+        float halfScaleZGround = _ground.transform.localScale.z / ScaleDivisionFactor;
 
         do
         {
-            halfScaleXGround = _ground.transform.localScale.x / ScaleDivisionFactor;
-            halfScaleZGround = _ground.transform.localScale.z / ScaleDivisionFactor;
-
             randomXPosition = Random.Range(_ground.transform.position.x - halfScaleXGround, _ground.transform.position.x + halfScaleXGround);
             randomZPosition = Random.Range(_ground.transform.position.z - halfScaleZGround, _ground.transform.position.z + halfScaleZGround);
 
