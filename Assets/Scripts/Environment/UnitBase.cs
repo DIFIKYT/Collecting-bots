@@ -3,9 +3,7 @@ using UnityEngine;
 
 public class UnitBase : MonoBehaviour
 {
-    private const string CopperName = "Copper";
-    private const string IronName = "Iron";
-    private const string GoldName = "Gold";
+    private const string ResourceName = "Resource";
 
     [SerializeField] private Unit _unitPrefab;
     [SerializeField] private TextViewer _textViewer;
@@ -47,32 +45,19 @@ public class UnitBase : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out Unit unit) && !unit.CanTake)
+        if (other.TryGetComponent(out Unit unit) && unit.CanTake == false)
         {
-            Resource resource = unit.GetComponentInChildren<Resource>();
+            Resource resource = unit.Resource;
 
             if (resource != null)
             {
-                switch (resource.Name)
-                {
-                    case CopperName:
-                        _copperCount++;
-                        _textViewer.ChangeCopperCount(_copperCount);
-                        break;
-                    case IronName:
-                        _ironCount++;
-                        _textViewer.ChangeIronCount(_ironCount);
-                        break;
-                    case GoldName:
-                        _goldCount++;
-                        _textViewer.ChangeGoldCount(_goldCount);
-                        break;
-                }
+                AddResource(resource.Type);
 
                 _resourceSpawner.ReturnToPool(resource);
                 resource.SetIsTaked(false);
                 resource.SetSelectedTarget(false);
                 unit.SetCanTake(true);
+                unit.ClearResource();
             }
         }
     }
@@ -80,13 +65,13 @@ public class UnitBase : MonoBehaviour
     private void ScanForResources()
     {
         _foundResources.Clear();
-        Collider[] colliders = Physics.OverlapSphere(transform.position, _scanRange, LayerMask.GetMask("Resource"));
+        Collider[] colliders = Physics.OverlapSphere(transform.position, _scanRange, LayerMask.GetMask(ResourceName));
 
         foreach (Collider collider in colliders)
         {
             Resource resource = collider.GetComponent<Resource>();
 
-            if (resource.IsSelectedTarget != true)
+            if (resource.IsSelectedTarget == false)
                 _foundResources.Add(resource);
         }
 
@@ -115,7 +100,7 @@ public class UnitBase : MonoBehaviour
     {
         foreach (Unit unit in _units)
         {
-            if (!unit.IsBusy)
+            if (unit.IsBusy == false)
             {
                 return unit;
             }
@@ -134,5 +119,24 @@ public class UnitBase : MonoBehaviour
     private void OnWasFreed(Unit unit)
     {
         _textViewer.ChangeUnitsInfo(_units);
+    }
+
+    private void AddResource(ResourceType type)
+    {
+        switch (type)
+        {
+            case ResourceType.Copper:
+                _copperCount++;
+                _textViewer.ChangeCopperCount(_copperCount);
+                break;
+            case ResourceType.Iron:
+                _ironCount++;
+                _textViewer.ChangeIronCount(_ironCount);
+                break;
+            case ResourceType.Gold:
+                _goldCount++;
+                _textViewer.ChangeGoldCount(_goldCount);
+                break;
+        }
     }
 }

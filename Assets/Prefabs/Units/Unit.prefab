@@ -227,9 +227,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e4242aa84238f1468c30a285d94df75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 10
-  _basePosition: {x: 0, y: 0, z: 0}
   _unitMover: {fileID: 2059958499488835558}
+  _config: {fileID: 11400000, guid: 465d8ae1de5b0384f920163c53123db7, type: 2}
 --- !u!114 &2059958499488835558
 MonoBehaviour:
   m_ObjectHideFlags: 0

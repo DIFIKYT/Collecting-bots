@@ -4,14 +4,14 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public class Resource : MonoBehaviour
 {
-    [SerializeField] private string _name;
+    [SerializeField] private ResourceType _type;
 
-    private bool _isTaked = false;
-    private bool _isSelectedTarget = false;
+    private bool _isTaked;
+    private bool _isSelectedTarget;
     private const float ResourceOffsetDistance = 1.5f;
 
     public bool IsSelectedTarget => _isSelectedTarget;
-    public string Name => _name;
+    public ResourceType Type => _type;
 
     private void OnValidate()
     {
@@ -20,7 +20,7 @@ public class Resource : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!_isTaked)
+        if (_isTaked == false)
         {
             if (_isSelectedTarget && other.TryGetComponent(out Unit unit))
             {
@@ -44,6 +44,7 @@ public class Resource : MonoBehaviour
     {
         if (unit.CanTake)
         {
+            unit.TakeResource(resource);
             unit.SetCanTake(false);
             resource.transform.SetParent(unit.transform, worldPositionStays: false);
             Vector3 offset = unit.transform.position + unit.transform.forward * ResourceOffsetDistance;

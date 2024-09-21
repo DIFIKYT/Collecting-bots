@@ -35,6 +35,7 @@ public class UnitSpawner : MonoBehaviour
     private Unit CreateUnit()
     {
         Unit unit = Instantiate(_unitPrefab, transform);
+
         return unit;
     }
 
@@ -57,7 +58,7 @@ public class UnitSpawner : MonoBehaviour
 
     public void ReturnToPool(Unit unit)
     {
-        if (!unit.IsBusy)
+        if (unit.IsBusy == false)
         {
             _unitPool.Release(unit);
         }
