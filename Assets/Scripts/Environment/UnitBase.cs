@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,31 +7,30 @@ public class UnitBase : MonoBehaviour
     private const string ResourceName = "Resource";
 
     [SerializeField] private Unit _unitPrefab;
-    [SerializeField] private TextViewer _textViewer;
-    [SerializeField] private ButtonManager _buttonManager;
     [SerializeField] private UnitSpawner _unitSpawner;
     [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private List<Transform> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
+    public event Action<ResourceType, float> ResourceCountChanged;
+    public event Action<List<Resource>> ResourcesFound;
+    public event Action<List<Unit>> UnitsCountChanged;
+
     private float _copperCount;
     private float _ironCount;
     private float _goldCount;
-    private int _startUnitCount = 3;
-    private List<Resource> _foundResources = new();
-    private List<Unit> _units = new();
+    private readonly int _startUnitCount = 3;
+    private readonly List<Resource> _foundResources = new();
+    private readonly List<Resource> _selectedResources = new();
+    private readonly List<Unit> _units = new();
 
     private void OnEnable()
     {
-        _buttonManager.ScanButton.onClick.AddListener(ScanForResources);
-        _buttonManager.SendUnitToResourceButton.onClick.AddListener(SendUnitToResource);
         _unitSpawner.UnitSpawned += AddUnit;
     }
 
     private void OnDisable()
     {
-        _buttonManager.ScanButton.onClick.RemoveListener(ScanForResources);
-        _buttonManager.SendUnitToResourceButton.onClick.RemoveListener(SendUnitToResource);
         _unitSpawner.UnitSpawned -= AddUnit;
 
         foreach (Unit unit in _units)
@@ -45,55 +45,54 @@ public class UnitBase : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out Unit unit) && unit.CanTake == false)
+        if (other.TryGetComponent(out Unit unit))
         {
-            Resource resource = unit.Resource;
+            Resource resource = unit.GetComponentInChildren<Resource>();
 
             if (resource != null)
             {
                 AddResource(resource.Type);
-
-                _resourceSpawner.ReturnToPool(resource);
-                resource.SetIsTaked(false);
-                resource.SetSelectedTarget(false);
-                unit.SetCanTake(true);
-                unit.ClearResource();
+                _resourceSpawner.ReturnToPool(unit.GetResource());
+                _selectedResources.Remove(resource);
             }
         }
     }
 
-    private void ScanForResources()
+    public void Scan()
     {
         _foundResources.Clear();
         Collider[] colliders = Physics.OverlapSphere(transform.position, _scanRange, LayerMask.GetMask(ResourceName));
 
         foreach (Collider collider in colliders)
         {
-            Resource resource = collider.GetComponent<Resource>();
+            Resource currentResource = collider.GetComponent<Resource>();
 
-            if (resource.IsSelectedTarget == false)
-                _foundResources.Add(resource);
+            if (currentResource != null && _selectedResources.Contains(currentResource) == false)
+            {
+                _foundResources.Add(currentResource);
+            }
         }
 
-        _textViewer.ChangeFoundResources(_foundResources);
+        ResourcesFound?.Invoke(_foundResources);
     }
 
-    private void SendUnitToResource()
+    public void SendUnit()
     {
         if (_foundResources.Count <= 0)
             return;
 
         Unit freeUnit = GetAvailableUnit();
+        Resource resource = _foundResources[0];
 
         if (freeUnit != null)
         {
-            freeUnit.MoveTo(_foundResources[0].transform.position);
-            _foundResources[0].SetSelectedTarget(true);
-            _foundResources.RemoveAt(0);
-            freeUnit.SetBusy(true);
+            freeUnit.MoveTo(resource.transform.position);
+            freeUnit.SetResource(resource);
+            _foundResources.Remove(resource);
+            _selectedResources.Add(resource);
         }
 
-        _textViewer.ChangeUnitsInfo(_units);
+        UnitsCountChanged?.Invoke(_units);
     }
 
     private Unit GetAvailableUnit()
@@ -113,29 +112,44 @@ public class UnitBase : MonoBehaviour
     {
         _units.Add(unit);
         unit.WasFreed += OnWasFreed;
-        _textViewer.ChangeUnitsInfo(_units);
+        UnitsCountChanged?.Invoke(_units);
     }
 
     private void OnWasFreed(Unit unit)
     {
-        _textViewer.ChangeUnitsInfo(_units);
+        UnitsCountChanged?.Invoke(_units);
     }
 
-    private void AddResource(ResourceType type)
+    private void AddResource(ResourceType resourceType)
     {
-        switch (type)
+        AddResourceCount(resourceType);
+
+        switch (resourceType)
+        {
+            case ResourceType.Copper:
+                ResourceCountChanged?.Invoke(resourceType, _copperCount);
+                break;
+            case ResourceType.Iron:
+                ResourceCountChanged?.Invoke(resourceType, _ironCount);
+                break;
+            case ResourceType.Gold:
+                ResourceCountChanged?.Invoke(resourceType, _goldCount);
+                break;
+        }
+    }
+
+    private void AddResourceCount(ResourceType resourceType)
+    {
+        switch (resourceType)
         {
             case ResourceType.Copper:
                 _copperCount++;
-                _textViewer.ChangeCopperCount(_copperCount);
                 break;
             case ResourceType.Iron:
                 _ironCount++;
-                _textViewer.ChangeIronCount(_ironCount);
                 break;
             case ResourceType.Gold:
                 _goldCount++;
-                _textViewer.ChangeGoldCount(_goldCount);
                 break;
         }
     }

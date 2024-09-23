@@ -1363,7 +1363,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9b66791bdfb9a8f47b29779c71152c2a, type: 3}
   m_Name: 
@@ -1383,7 +1383,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _scanButton: {fileID: 552944813}
-  _sendUnitToResourceButton: {fileID: 1062141870}
+  _sendUnit: {fileID: 1062141870}
+  _unitBase: {fileID: 1835138290}
 --- !u!114 &963194231
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1401,6 +1402,7 @@ MonoBehaviour:
   _goldCount: {fileID: 234202851}
   _foundResources: {fileID: 75134268}
   _unitsInfo: {fileID: 898977621}
+  _unitbase: {fileID: 1835138290}
 --- !u!1 &977177413
 GameObject:
   m_ObjectHideFlags: 0
@@ -1794,6 +1796,17 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1835138290 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8114721720389744517, guid: 2454f263f494ad64398a265e6d1df119, type: 3}
+  m_PrefabInstance: {fileID: 6676405107982632964}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 038c2f5f0565dc54aac059774f0c2ffa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1841880296
 GameObject:
   m_ObjectHideFlags: 0
