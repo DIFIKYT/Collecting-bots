@@ -56,8 +56,8 @@ public class TextViewer : MonoBehaviour
 
         foreach (Resource resource in findResources)
         {
-            _foundResources.text += $"\n{resource.Type}: distance from base " +
-                $"{Mathf.Round(Vector3.Distance(transform.position, resource.transform.position))}";
+            _foundResources.text += $"{resource.Type}: distance from base " +
+                $"{Mathf.Round(Vector3.Distance(transform.position, resource.transform.position))} \n";
         }
     }
 
