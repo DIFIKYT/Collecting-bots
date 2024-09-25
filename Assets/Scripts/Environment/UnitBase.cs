@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +6,7 @@ public class UnitBase : MonoBehaviour
     private const string ResourceName = "Resource";
 
     [SerializeField] private Unit _unitPrefab;
+<<<<<<< HEAD
     [SerializeField] private List<Transform> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
@@ -27,12 +27,39 @@ public class UnitBase : MonoBehaviour
     {
         if (_unitSpawner != null)
             _unitSpawner.UnitSpawned += AddUnit;
+=======
+    [SerializeField] private TextViewer _textViewer;
+    [SerializeField] private ButtonManager _buttonManager;
+    [SerializeField] private UnitSpawner _unitSpawner;
+    [SerializeField] private ResourceSpawner _resourceSpawner;
+    [SerializeField] private List<Transform> _unitSpawnPositions;
+    [SerializeField] private float _scanRange;
+
+    private float _copperCount;
+    private float _ironCount;
+    private float _goldCount;
+    private int _startUnitCount = 3;
+    private List<Resource> _foundResources = new();
+    private List<Unit> _units = new();
+
+    private void OnEnable()
+    {
+        _buttonManager.ScanButton.onClick.AddListener(ScanForResources);
+        _buttonManager.SendUnitToResourceButton.onClick.AddListener(SendUnitToResource);
+        _unitSpawner.UnitSpawned += AddUnit;
+>>>>>>> parent of 6d15fef (Commit)
     }
 
     private void OnDisable()
     {
+<<<<<<< HEAD
         if (_unitSpawner != null)
             _unitSpawner.UnitSpawned -= AddUnit;
+=======
+        _buttonManager.ScanButton.onClick.RemoveListener(ScanForResources);
+        _buttonManager.SendUnitToResourceButton.onClick.RemoveListener(SendUnitToResource);
+        _unitSpawner.UnitSpawned -= AddUnit;
+>>>>>>> parent of 6d15fef (Commit)
 
         foreach (Unit unit in _units)
             unit.WasFreed -= OnWasFreed;
@@ -47,19 +74,24 @@ public class UnitBase : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out Unit unit))
+        if (other.TryGetComponent(out Unit unit) && unit.CanTake == false)
         {
-            Resource resource = unit.GetComponentInChildren<Resource>();
+            Resource resource = unit.Resource;
 
             if (resource != null)
             {
                 AddResource(resource.Type);
-                _resourceSpawner.ReturnToPool(unit.GetResource());
-                _selectedResources.Remove(resource);
+
+                _resourceSpawner.ReturnToPool(resource);
+                resource.SetIsTaked(false);
+                resource.SetSelectedTarget(false);
+                unit.SetCanTake(true);
+                unit.ClearResource();
             }
         }
     }
 
+<<<<<<< HEAD
     public void TakeSpawners(UnitSpawner unitSpawner, ResourceSpawner resourceSpawner)
     {
         _unitSpawner = unitSpawner;
@@ -82,40 +114,40 @@ public class UnitBase : MonoBehaviour
     }
 
     public void Scan()
+=======
+    private void ScanForResources()
+>>>>>>> parent of 6d15fef (Commit)
     {
         _foundResources.Clear();
         Collider[] colliders = Physics.OverlapSphere(transform.position, _scanRange, LayerMask.GetMask(ResourceName));
 
         foreach (Collider collider in colliders)
         {
-            Resource currentResource = collider.GetComponent<Resource>();
+            Resource resource = collider.GetComponent<Resource>();
 
-            if (currentResource != null && _selectedResources.Contains(currentResource) == false)
-            {
-                _foundResources.Add(currentResource);
-            }
+            if (resource.IsSelectedTarget == false)
+                _foundResources.Add(resource);
         }
 
-        ResourcesFound?.Invoke(_foundResources);
+        _textViewer.ChangeFoundResources(_foundResources);
     }
 
-    public void SendUnit()
+    private void SendUnitToResource()
     {
         if (_foundResources.Count <= 0)
             return;
 
         Unit freeUnit = GetAvailableUnit();
-        Resource resource = _foundResources[0];
 
         if (freeUnit != null)
         {
-            freeUnit.MoveTo(resource.transform.position);
-            freeUnit.SetResource(resource);
-            _foundResources.Remove(resource);
-            _selectedResources.Add(resource);
+            freeUnit.MoveTo(_foundResources[0].transform.position);
+            _foundResources[0].SetSelectedTarget(true);
+            _foundResources.RemoveAt(0);
+            freeUnit.SetBusy(true);
         }
 
-        UnitsCountChanged?.Invoke(_units);
+        _textViewer.ChangeUnitsInfo(_units);
     }
 
     private Unit GetAvailableUnit()
@@ -135,11 +167,33 @@ public class UnitBase : MonoBehaviour
     {
         _units.Add(unit);
         unit.WasFreed += OnWasFreed;
-        UnitsCountChanged?.Invoke(_units);
+        _textViewer.ChangeUnitsInfo(_units);
     }
 
     private void OnWasFreed(Unit unit)
     {
-        UnitsCountChanged?.Invoke(_units);
+        _textViewer.ChangeUnitsInfo(_units);
     }
+<<<<<<< HEAD
+=======
+
+    private void AddResource(ResourceType type)
+    {
+        switch (type)
+        {
+            case ResourceType.Copper:
+                _copperCount++;
+                _textViewer.ChangeCopperCount(_copperCount);
+                break;
+            case ResourceType.Iron:
+                _ironCount++;
+                _textViewer.ChangeIronCount(_ironCount);
+                break;
+            case ResourceType.Gold:
+                _goldCount++;
+                _textViewer.ChangeGoldCount(_goldCount);
+                break;
+        }
+    }
+>>>>>>> parent of 6d15fef (Commit)
 }

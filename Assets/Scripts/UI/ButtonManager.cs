@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class ButtonManager : MonoBehaviour
 {
     [SerializeField] private Button _scanButton;
+<<<<<<< HEAD
     [SerializeField] private Button _sendUnitButton;
     [SerializeField] private BaseSpawner _baseSpawner;
 
@@ -32,4 +33,10 @@ public class ButtonManager : MonoBehaviour
         _scanButton.onClick.AddListener(_unitBase.Scan);
         _sendUnitButton.onClick.AddListener(_unitBase.SendUnit);
     }
+=======
+    [SerializeField] private Button _sendUnitToResourceButton;
+
+    public Button ScanButton => _scanButton;
+    public Button SendUnitToResourceButton => _sendUnitToResourceButton;
+>>>>>>> parent of 6d15fef (Commit)
 }

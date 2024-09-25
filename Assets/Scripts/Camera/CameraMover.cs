@@ -8,13 +8,13 @@ public class CameraMover : MonoBehaviour
     private float _screenWidth;
     private float _screenHeight;
 
-    private void Awake()
+    void Start()
     {
         _screenWidth = Screen.width;
         _screenHeight = Screen.height;
     }
 
-    private void Update()
+    void Update()
     {
         Vector3 movement = Vector3.zero;
 
