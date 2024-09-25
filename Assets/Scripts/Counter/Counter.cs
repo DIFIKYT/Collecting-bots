@@ -4,8 +4,10 @@ public class Counter : MonoBehaviour
 {
     private int _count = 0;
 
-    public Counter(int count) =>
+    public Counter(int count)
+    {
         _count = count;
+    }
 
     public int Count => _count;
 
