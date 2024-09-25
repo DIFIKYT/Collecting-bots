@@ -34,9 +34,7 @@ public class UnitSpawner : MonoBehaviour
 
     private Unit Create()
     {
-        Unit unit = Instantiate(_unitPrefab, transform);
-
-        return unit;
+        return Instantiate(_unitPrefab, transform);
     }
 
     private void OnGet(Unit unit)
@@ -54,13 +52,5 @@ public class UnitSpawner : MonoBehaviour
     private void Destroy(Unit unit)
     {
         Destroy(unit.gameObject);
-    }
-
-    public void ReturnToPool(Unit unit)
-    {
-        if (unit.IsBusy == false)
-        {
-            _unitPool.Release(unit);
-        }
     }
 }

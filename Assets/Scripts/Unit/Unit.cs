@@ -6,23 +6,34 @@ public class Unit : MonoBehaviour
 {
     [SerializeField] private UnitMover _unitMover;
     [SerializeField] private UnitConfig _config;
+    [SerializeField] private UnitTrigger _unitTrigger;
 
     public event Action<Unit> WasFreed;
 
     private Resource _resource;
     private Vector3 _startPosition;
-    private bool _isBusy = false;
-    private bool _canTake = true;
+    private bool _isBusy;
+    private bool _canTake;
+    private const float ResourceOffsetDistance = 1.5f;
 
     public bool IsBusy => _isBusy;
 
-    private void Start()
-    {
+    private void Start() => 
         _startPosition = transform.position;
+
+    private void OnEnable()
+    {
+        _unitTrigger.ResourceDetected += OnTakeResource;
+    }
+
+    private void OnDisable()
+    {
+        _unitTrigger.ResourceDetected -= OnTakeResource;
     }
 
     public void MoveTo(Vector3 targetPosition)
     {
+        _canTake = true;
         _isBusy = true;
 
         targetPosition.y = _startPosition.y;
@@ -36,23 +47,29 @@ public class Unit : MonoBehaviour
         });
     }
 
-    public void SetCanTake(bool canTake)
+    public Resource GetResource()
     {
-        _canTake = canTake;
+        Resource resourceForReturn = _resource;
+        _resource = null;
+        _isBusy = false;
+
+        return resourceForReturn;
     }
 
-    public void SetBusy(bool isBusy)
-    {
-        _isBusy = isBusy;
-    }
-
-    public void TakeResource(Resource resource)
+    public void SetResource(Resource resource)
     {
         _resource = resource;
     }
 
-    public void ClearResource()
+    private void OnTakeResource(Resource resource)
     {
-        _resource = null;
+        if (_canTake == false || resource != _resource)
+            return;
+
+        _isBusy = true;
+        _canTake = false;
+        resource.transform.SetParent(transform, worldPositionStays: false);
+        Vector3 offset = transform.position + transform.forward * ResourceOffsetDistance;
+        resource.transform.SetPositionAndRotation(offset, transform.rotation);
     }
 }
