@@ -17,8 +17,6 @@ public class Unit : MonoBehaviour
     private const float ResourceOffsetDistance = 1.5f;
 
     public bool IsBusy => _isBusy;
-    public bool CanTake => _canTake;
-    public Resource Resource => _resource;
 
     private void Start() => 
         _startPosition = transform.position;
