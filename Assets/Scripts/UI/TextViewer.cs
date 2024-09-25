@@ -4,33 +4,30 @@ using UnityEngine;
 
 public class TextViewer : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI _copperCount;
-    [SerializeField] private TextMeshProUGUI _ironCount;
-    [SerializeField] private TextMeshProUGUI _goldCount;
+    [SerializeField] private TextMeshProUGUI _resourcesCount;
     [SerializeField] private TextMeshProUGUI _foundResources;
     [SerializeField] private TextMeshProUGUI _unitsInfo;
-    [SerializeField] private UnitBase _unitbase;
+    [SerializeField] private BaseSpawner _baseSpawner;
 
-    private void Start()
-    {
-        _copperCount.text = "Copper count: 0";
-        _ironCount.text = "Iron count: 0";
-        _goldCount.text = "Gold count: 0";
-        _unitsInfo.text = "Free units: 3\nBusy units: 0";
-    }
+    private UnitBase _unitBase;
 
     private void OnEnable()
     {
-        _unitbase.ResourceCountChanged += OnResourceChangeText;
-        _unitbase.ResourcesFound += OnChangeFoundResources;
-        _unitbase.UnitsCountChanged += OnChangeUnitsInfo;
+        _baseSpawner.BaseSpawned += OnBaseSpawned;
     }
 
     private void OnDisable()
     {
-        _unitbase.ResourceCountChanged -= OnResourceChangeText;
-        _unitbase.ResourcesFound -= OnChangeFoundResources;
-        _unitbase.UnitsCountChanged -= OnChangeUnitsInfo;
+        _baseSpawner.BaseSpawned -= OnBaseSpawned;
+    }
+
+    private void OnBaseSpawned(UnitBase unitBase)
+    {
+        _unitBase = unitBase;
+
+        _unitBase.ResourceCountChanged += OnResourceChangeText;
+        _unitBase.ResourcesFound += OnChangeFoundResources;
+        _unitBase.UnitsCountChanged += OnChangeUnitsInfo;
     }
 
     private void OnChangeUnitsInfo(List<Unit> units)
@@ -64,34 +61,10 @@ public class TextViewer : MonoBehaviour
         }
     }
 
-    private void OnResourceChangeText(ResourceType resourceType, float resourceCount)
+    private void OnResourceChangeText(Dictionary<ResourceType, Counter> resources)
     {
-        switch (resourceType)
-        {
-            case ResourceType.Copper:
-                ChangeCopperText(resourceCount);
-                break;
-            case ResourceType.Iron:
-                ChangeIronText(resourceCount);
-                break;
-            case ResourceType.Gold:
-                ChangeGoldText(resourceCount);
-                break;
-        }
-    }
-
-    private void ChangeCopperText(float copperCount)
-    {
-        _copperCount.text = "Copper count: " + copperCount;
-    }
-
-    private void ChangeIronText(float ironCount)
-    {
-        _ironCount.text = "Iron count: " + ironCount;
-    }
-
-    private void ChangeGoldText(float goldCount)
-    {
-        _goldCount.text = "Gold count: " + goldCount;
+        _resourcesCount.text = string.Empty;
+        foreach (var resourceType in resources.Keys)
+            _resourcesCount.text += $"{resourceType} count: {resources[resourceType].Count}\n";
     }
 }

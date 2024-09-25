@@ -7,35 +7,37 @@ public class UnitBase : MonoBehaviour
     private const string ResourceName = "Resource";
 
     [SerializeField] private Unit _unitPrefab;
-    [SerializeField] private UnitSpawner _unitSpawner;
-    [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private List<Transform> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
-    public event Action<ResourceType, float> ResourceCountChanged;
+    public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
+    public event Action<ResourceType, UnitBase> NewResourceEntered;
     public event Action<List<Resource>> ResourcesFound;
     public event Action<List<Unit>> UnitsCountChanged;
 
-    private float _copperCount;
-    private float _ironCount;
-    private float _goldCount;
     private readonly int _startUnitCount = 3;
     private readonly List<Resource> _foundResources = new();
     private readonly List<Resource> _selectedResources = new();
     private readonly List<Unit> _units = new();
+    private readonly Dictionary<ResourceType, Counter> _resources = new();
+    private UnitSpawner _unitSpawner;
+    private ResourceSpawner _resourceSpawner;
 
     private void OnEnable()
     {
-        _unitSpawner.UnitSpawned += AddUnit;
+        if (_unitSpawner != null)
+            _unitSpawner.UnitSpawned += AddUnit;
     }
 
     private void OnDisable()
     {
-        _unitSpawner.UnitSpawned -= AddUnit;
+        if (_unitSpawner != null)
+            _unitSpawner.UnitSpawned -= AddUnit;
 
         foreach (Unit unit in _units)
             unit.WasFreed -= OnWasFreed;
     }
+
 
     private void Start()
     {
@@ -56,6 +58,27 @@ public class UnitBase : MonoBehaviour
                 _selectedResources.Remove(resource);
             }
         }
+    }
+
+    public void TakeSpawners(UnitSpawner unitSpawner, ResourceSpawner resourceSpawner)
+    {
+        _unitSpawner = unitSpawner;
+        _resourceSpawner = resourceSpawner;
+    }
+
+    public void TakeNewDictionary(ResourceType resourceType, Counter counter)
+    {
+        _resources.Add(resourceType, counter);
+    }
+                
+
+    private void AddResource(ResourceType resourceType)
+    {
+        if (_resources.ContainsKey(resourceType) == false)
+            NewResourceEntered?.Invoke(resourceType, this);
+
+        _resources[resourceType].IncreaseCount();
+        ResourceCountChanged?.Invoke(_resources);
     }
 
     public void Scan()
@@ -118,39 +141,5 @@ public class UnitBase : MonoBehaviour
     private void OnWasFreed(Unit unit)
     {
         UnitsCountChanged?.Invoke(_units);
-    }
-
-    private void AddResource(ResourceType resourceType)
-    {
-        AddResourceCount(resourceType);
-
-        switch (resourceType)
-        {
-            case ResourceType.Copper:
-                ResourceCountChanged?.Invoke(resourceType, _copperCount);
-                break;
-            case ResourceType.Iron:
-                ResourceCountChanged?.Invoke(resourceType, _ironCount);
-                break;
-            case ResourceType.Gold:
-                ResourceCountChanged?.Invoke(resourceType, _goldCount);
-                break;
-        }
-    }
-
-    private void AddResourceCount(ResourceType resourceType)
-    {
-        switch (resourceType)
-        {
-            case ResourceType.Copper:
-                _copperCount++;
-                break;
-            case ResourceType.Iron:
-                _ironCount++;
-                break;
-            case ResourceType.Gold:
-                _goldCount++;
-                break;
-        }
     }
 }

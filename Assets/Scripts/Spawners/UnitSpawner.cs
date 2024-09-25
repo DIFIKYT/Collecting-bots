@@ -11,16 +11,16 @@ public class UnitSpawner : MonoBehaviour
 
     public event Action<Unit> UnitSpawned;
 
-    private ObjectPool<Unit> _unitPool;
-    private Vector3 _currentSpawnPosition;
+    private ObjectPool<Unit> _pool;
+    private Vector3 _spawnPosition;
 
     private void Awake()
     {
-        _unitPool = new ObjectPool<Unit>(
-            CreateUnit,
-            OnGetUnit,
-            OnReleaseUnit,
-            DestroyUnit,
+        _pool = new ObjectPool<Unit>(
+            createFunc: Create,
+            actionOnGet: OnGet,
+            actionOnRelease: OnRelease,
+            actionOnDestroy: Destroy,
             collectionCheck: true,
             defaultCapacity: DefaultCapacity,
             maxSize: MaxSize);
@@ -28,28 +28,28 @@ public class UnitSpawner : MonoBehaviour
 
     public void Spawn(Vector3 spawnPosition)
     {
-        _currentSpawnPosition = spawnPosition;
-        _unitPool.Get();
+        _spawnPosition = spawnPosition;
+        _pool.Get();
     }
 
-    private Unit CreateUnit()
+    private Unit Create()
     {
         return Instantiate(_unitPrefab, transform);
     }
 
-    private void OnGetUnit(Unit unit)
+    private void OnGet(Unit unit)
     {
-        unit.transform.position = _currentSpawnPosition;
+        unit.transform.position = _spawnPosition;
         UnitSpawned?.Invoke(unit);
         unit.gameObject.SetActive(true);
     }
 
-    private void OnReleaseUnit(Unit unit)
+    private void OnRelease(Unit unit)
     {
         unit.gameObject.SetActive(false);
     }
 
-    private void DestroyUnit(Unit unit)
+    private void Destroy(Unit unit)
     {
         Destroy(unit.gameObject);
     }
