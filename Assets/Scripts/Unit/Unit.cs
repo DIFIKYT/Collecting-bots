@@ -33,12 +33,14 @@ public class Unit : MonoBehaviour
 
     public void MoveTo(Vector3 targetPosition)
     {
+        Vector3 basePosition = _config.BasePosition;
         _canTake = true;
         _isBusy = true;
 
         targetPosition.y = _startPosition.y;
+        basePosition.y = _startPosition.y;
 
-        MovementData movementData = new(transform, targetPosition, _config.BasePosition, _startPosition, _config.MoveSpeed);
+        MovementData movementData = new(transform, targetPosition, basePosition, _startPosition, _config.MoveSpeed);
 
         _unitMover.MoveQueue(movementData, () =>
         {
