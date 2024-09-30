@@ -11,15 +11,7 @@ public class TextViewer : MonoBehaviour
 
     private UnitBase _unitBase;
 
-    private void OnEnable()
-    {
-        _baseSpawner.BaseSpawned += OnBaseSpawned;
-    }
 
-    private void OnDisable()
-    {
-        _baseSpawner.BaseSpawned -= OnBaseSpawned;
-    }
 
     private void OnBaseSpawned(UnitBase unitBase)
     {
