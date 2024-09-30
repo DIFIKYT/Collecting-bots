@@ -5,6 +5,8 @@ using UnityEngine.Pool;
 
 public class ResourceSpawner : MonoBehaviour
 {
+    private const string ResourceName = "Resource";
+    private const string UnitBaseName = "UnitBase";
     private const float ScaleDivisionFactor = 2.0f;
     private const int DefaultCapacity = 100;
     private const int MaxSize = 100;
@@ -79,7 +81,7 @@ public class ResourceSpawner : MonoBehaviour
 
             currentSpawnPosition = new Vector3(randomXPosition, _spawnHeight, randomZPosition);
 
-            isPositionFree = !Physics.CheckSphere(currentSpawnPosition, lengthRadiusCheck, LayerMask.GetMask("Resource", "UnitBase"));
+            isPositionFree = !Physics.CheckSphere(currentSpawnPosition, lengthRadiusCheck, LayerMask.GetMask(ResourceName, UnitBaseName));
 
         } while (isPositionFree == false);
 

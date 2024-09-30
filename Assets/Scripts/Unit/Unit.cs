@@ -51,7 +51,6 @@ public class Unit : MonoBehaviour
     {
         Resource resourceForReturn = _resource;
         _resource = null;
-        _isBusy = false;
 
         return resourceForReturn;
     }
