@@ -7,21 +7,24 @@ public class UnitBase : MonoBehaviour
     private const string ResourceName = "Resource";
 
     [SerializeField] private Unit _unitPrefab;
-    [SerializeField] private List<Transform> _unitSpawnPositions;
+    [SerializeField] private List<UnitSpawnPosition> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
     public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
-    public event Action<ResourceType, UnitBase> NewResourceEntered;
     public event Action<List<Resource>> ResourcesFound;
     public event Action<List<Unit>> UnitsCountChanged;
+    public event Action<ResourceType, UnitBase> NewResourceEntered;
+    public event Action<int> BaseWasClicked;
 
-    private readonly int _startUnitCount = 3;
     private readonly List<Resource> _foundResources = new();
     private readonly List<Resource> _selectedResources = new();
     private readonly List<Unit> _units = new();
     private readonly Dictionary<ResourceType, Counter> _resources = new();
     private UnitSpawner _unitSpawner;
     private ResourceSpawner _resourceSpawner;
+    private int _number;
+
+    public int Number => _number;
 
     private void OnEnable()
     {
@@ -36,13 +39,6 @@ public class UnitBase : MonoBehaviour
 
         foreach (Unit unit in _units)
             unit.WasFreed -= OnWasFreed;
-    }
-
-
-    private void Start()
-    {
-        for (int i = 0; i < _startUnitCount; i++)
-            _unitSpawner.Spawn(_unitSpawnPositions[i].position);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -60,6 +56,11 @@ public class UnitBase : MonoBehaviour
         }
     }
 
+    private void OnMouseDown()
+    {
+        BaseWasClicked?.Invoke(_number);
+    }
+
     public void TakeSpawners(UnitSpawner unitSpawner, ResourceSpawner resourceSpawner)
     {
         _unitSpawner = unitSpawner;
@@ -70,15 +71,32 @@ public class UnitBase : MonoBehaviour
     {
         _resources.Add(resourceType, counter);
     }
-                
 
-    private void AddResource(ResourceType resourceType)
+    public void TakeNumber(int number)
     {
-        if (_resources.ContainsKey(resourceType) == false)
-            NewResourceEntered?.Invoke(resourceType, this);
+        _number = number;
+    }
 
-        _resources[resourceType].IncreaseCount();
-        ResourceCountChanged?.Invoke(_resources);
+    public void TakeUnit()
+    {
+        foreach (UnitSpawnPosition spawnPosition in _unitSpawnPositions)
+        {
+            if (spawnPosition.IsOccupied == false)
+            {
+                _unitSpawner.Spawn(spawnPosition.transform.position, transform.position);
+                spawnPosition.Occupy();
+                break;
+            }
+        }
+    }
+
+    public void SpawnUnits(float count)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            _unitSpawner.Spawn(_unitSpawnPositions[i].transform.position, transform.position);
+            _unitSpawnPositions[i].Occupy();
+        }
     }
 
     public void Scan()
@@ -116,6 +134,15 @@ public class UnitBase : MonoBehaviour
         }
 
         UnitsCountChanged?.Invoke(_units);
+    }
+
+    private void AddResource(ResourceType resourceType)
+    {
+        if (_resources.ContainsKey(resourceType) == false)
+            NewResourceEntered?.Invoke(resourceType, this);
+
+        _resources[resourceType].IncreaseCount();
+        ResourceCountChanged?.Invoke(_resources);
     }
 
     private Unit GetAvailableUnit()

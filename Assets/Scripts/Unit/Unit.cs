@@ -62,6 +62,11 @@ public class Unit : MonoBehaviour
         _resource = resource;
     }
 
+    public void TakeBasePosition(Vector3 basePosition)
+    {
+        _config.TakeBasePosition(basePosition);
+    }
+
     private void OnTakeResource(Resource resource)
     {
         if (_canTake == false || resource != _resource)

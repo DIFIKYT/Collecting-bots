@@ -13,6 +13,7 @@ public class UnitSpawner : MonoBehaviour
 
     private ObjectPool<Unit> _pool;
     private Vector3 _spawnPosition;
+    private Vector3 _basePosition;
 
     private void Awake()
     {
@@ -26,8 +27,9 @@ public class UnitSpawner : MonoBehaviour
             maxSize: MaxSize);
     }
 
-    public void Spawn(Vector3 spawnPosition)
+    public void Spawn(Vector3 spawnPosition, Vector3 basePosition)
     {
+        _basePosition = basePosition;
         _spawnPosition = spawnPosition;
         _pool.Get();
     }
@@ -40,6 +42,7 @@ public class UnitSpawner : MonoBehaviour
     private void OnGet(Unit unit)
     {
         unit.transform.position = _spawnPosition;
+        unit.TakeBasePosition(_basePosition);
         UnitSpawned?.Invoke(unit);
         unit.gameObject.SetActive(true);
     }

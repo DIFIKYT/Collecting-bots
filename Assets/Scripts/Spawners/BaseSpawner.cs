@@ -1,4 +1,5 @@
 using System;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -12,10 +13,13 @@ public class BaseSpawner : MonoBehaviour
     [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private Vector3 _firstBaseSpawnCoordinate;
 
+    private readonly int _unitsCountForFirstBase = 3;
+    private bool _isFirstBase = true;
     public event Action<UnitBase> BaseSpawned;
 
     private ObjectPool<UnitBase> _pool;
     private Vector3 _spawnPosition;
+    private int _unitBaseNumber;
 
     private void Awake()
     {
@@ -34,6 +38,14 @@ public class BaseSpawner : MonoBehaviour
         Spawn(_firstBaseSpawnCoordinate);
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            Spawn(new Vector3(UnityEngine.Random.Range(-50, 50), 0, UnityEngine.Random.Range(-50, 50)));
+        }
+    }
+
     public void Spawn(Vector3 spawnPosition)
     {
         _spawnPosition = spawnPosition;
@@ -43,13 +55,15 @@ public class BaseSpawner : MonoBehaviour
     private UnitBase Create()
     {
         UnitBase unitBase = Instantiate(_unitBasePrefab, transform);
+
         unitBase.gameObject.SetActive(false);
         unitBase.TakeSpawners(_unitSpawner, _resourceSpawner);
+        unitBase.TakeNumber(_unitBaseNumber);
+
+        _unitBaseNumber++;
 
         return unitBase;
     }
-
-
 
     private void OnGet(UnitBase unitBase)
     {
@@ -57,6 +71,12 @@ public class BaseSpawner : MonoBehaviour
         unitBase.transform.position = _spawnPosition;
         unitBase.gameObject.SetActive(true);
         BaseSpawned?.Invoke(unitBase);
+
+        if (_isFirstBase)
+        {
+            unitBase.SpawnUnits(_unitsCountForFirstBase);
+            _isFirstBase = false;
+        }
     }
 
     private void OnRelease(UnitBase unitBase)

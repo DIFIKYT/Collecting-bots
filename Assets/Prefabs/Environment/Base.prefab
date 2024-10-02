@@ -154,13 +154,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _unitPrefab: {fileID: 3345094634068511652, guid: 951dcb281f6d5ee4bb2f1b4fadb3210c, type: 3}
   _unitSpawnPositions:
-  - {fileID: 8183561602219059818}
-  - {fileID: 2500603996129011533}
-  - {fileID: 91485684440056415}
-  - {fileID: 8736488295739278125}
-  - {fileID: 1004787211868025127}
-  - {fileID: 4733915682815858002}
-  _scanRange: 50
+  - {fileID: 4648298226643842487}
+  - {fileID: 1445400957703861912}
+  - {fileID: 86791913034631124}
+  - {fileID: 1542926449381191981}
+  - {fileID: 8230981158230378676}
+  - {fileID: 2335756396311935464}
+  _scanRange: 100
 --- !u!1001 &321974696885042638
 PrefabInstance:
   m_ObjectHideFlags: 0
