@@ -12,14 +12,12 @@ public class Unit : MonoBehaviour
 
     private Resource _resource;
     private Vector3 _startPosition;
+    private Vector3 _basePosition;
     private bool _isBusy;
     private bool _canTake;
     private const float ResourceOffsetDistance = 1.5f;
 
     public bool IsBusy => _isBusy;
-
-    private void Start() => 
-        _startPosition = transform.position;
 
     private void OnEnable()
     {
@@ -33,14 +31,12 @@ public class Unit : MonoBehaviour
 
     public void MoveTo(Vector3 targetPosition)
     {
-        Vector3 basePosition = _config.BasePosition;
         _canTake = true;
         _isBusy = true;
 
         targetPosition.y = _startPosition.y;
-        basePosition.y = _startPosition.y;
 
-        MovementData movementData = new(transform, targetPosition, basePosition, _startPosition, _config.MoveSpeed);
+        MovementData movementData = new(transform, targetPosition, _basePosition, _startPosition, _config.MoveSpeed);
 
         _unitMover.MoveQueue(movementData, () =>
         {
@@ -64,7 +60,13 @@ public class Unit : MonoBehaviour
 
     public void TakeBasePosition(Vector3 basePosition)
     {
-        _config.TakeBasePosition(basePosition);
+        _basePosition = basePosition;
+        _basePosition.y = _startPosition.y;
+    }
+
+    public void TakeStartPositin(Vector3 startPosition)
+    {
+        _startPosition = startPosition;
     }
 
     private void OnTakeResource(Resource resource)

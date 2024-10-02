@@ -42,6 +42,7 @@ public class UnitSpawner : MonoBehaviour
     private void OnGet(Unit unit)
     {
         unit.transform.position = _spawnPosition;
+        unit.TakeStartPositin(_spawnPosition);
         unit.TakeBasePosition(_basePosition);
         UnitSpawned?.Invoke(unit);
         unit.gameObject.SetActive(true);

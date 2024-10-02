@@ -160,7 +160,7 @@ MonoBehaviour:
   - {fileID: 1542926449381191981}
   - {fileID: 8230981158230378676}
   - {fileID: 2335756396311935464}
-  _scanRange: 100
+  _scanRange: 30
 --- !u!1001 &321974696885042638
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -293,6 +293,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9027992766627118819, guid: 387fb99aa4dff1f4aa576401f876aa5c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9027992766627118819, guid: 387fb99aa4dff1f4aa576401f876aa5c, type: 3}
+      propertyPath: m_ConstrainProportionsScale
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

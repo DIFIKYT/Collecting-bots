@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class Game : MonoBehaviour
@@ -41,7 +40,7 @@ public class Game : MonoBehaviour
         {
             foreach (UnitBase unitBase in _unitBases.Values)
             {
-                unitBase.BaseWasClicked -= ActiveUnitBaseUI;
+                unitBase.BaseWasClicked -= ActiveUnitBase;
             }
         }
     }
@@ -54,17 +53,19 @@ public class Game : MonoBehaviour
         _unitBasesUI.Add(unitBase.Number, unitBaseUIManager);
         _unitBases.Add(unitBaseUIManager, unitBase);
 
-        unitBase.BaseWasClicked += ActiveUnitBaseUI;
+        unitBase.BaseWasClicked += ActiveUnitBase;
         unitBase.ResourceCountChanged += unitBaseUIManager.OnChangeResources;
         unitBase.ResourcesFound += unitBaseUIManager.OnChangeFoundResources;
         unitBase.UnitsCountChanged += unitBaseUIManager.OnChangeUnitsInfo;
+
+        //Почему-то покупая юнита для одной базы, он записывается для всех
 
         unitBaseUIManager.ButtonManager.ScanButton.onClick.AddListener(OnScanButtonPressed);
         unitBaseUIManager.ButtonManager.SendUnitButton.onClick.AddListener(OnSendUnitButtonPressed);
         unitBaseUIManager.ButtonManager.BuyUnitButton.onClick.AddListener(OnBuyUnitButtonPressed);
     }
 
-    private void ActiveUnitBaseUI(int unitBaseNumber)
+    private void ActiveUnitBase(int unitBaseNumber)
     {
         if (_currentUnitBaseUI != null)
             _currentUnitBaseUI.gameObject.SetActive(false);
