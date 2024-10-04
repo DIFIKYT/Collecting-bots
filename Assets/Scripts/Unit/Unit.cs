@@ -64,7 +64,7 @@ public class Unit : MonoBehaviour
         _basePosition.y = _startPosition.y;
     }
 
-    public void TakeStartPositin(Vector3 startPosition)
+    public void TakeSpawnPositin(Vector3 startPosition)
     {
         _startPosition = startPosition;
     }

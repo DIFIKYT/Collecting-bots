@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class Game : MonoBehaviour
 {
-
     [SerializeField] private BaseSpawner _baseSpawner;
     [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private UnitSpawner _unitSpawner;
@@ -24,24 +23,17 @@ public class Game : MonoBehaviour
     {
         _baseSpawner.BaseSpawned -= OnUnitBaseSpawned;
 
-        if(_unitBasesUI != null)
+        foreach (UnitBaseUIManager unitBaseUIManager in _unitBasesUI.Values)
         {
-            foreach(UnitBaseUIManager unitBaseUIManager in _unitBasesUI.Values)
-            {
-                ButtonManager buttonManager = unitBaseUIManager.ButtonManager;
-
-                buttonManager.ScanButton.onClick.RemoveListener(OnScanButtonPressed);
-                buttonManager.SendUnitButton.onClick.RemoveListener(OnSendUnitButtonPressed);
-                buttonManager.BuyUnitButton.onClick.RemoveListener(OnBuyUnitButtonPressed);
-            }
+            ButtonManager buttonManager = unitBaseUIManager.ButtonManager;
+            buttonManager.ScanButton.onClick.RemoveListener(OnScanButtonPressed);
+            buttonManager.SendUnitButton.onClick.RemoveListener(OnSendUnitButtonPressed);
+            buttonManager.BuyUnitButton.onClick.RemoveListener(OnBuyUnitButtonPressed);
         }
 
-        if (_unitBases != null)
+        foreach (UnitBase unitBase in _unitBases.Values)
         {
-            foreach (UnitBase unitBase in _unitBases.Values)
-            {
-                unitBase.BaseWasClicked -= ActiveUnitBase;
-            }
+            unitBase.BaseWasClicked -= ActiveUnitBase;
         }
     }
 
@@ -58,8 +50,6 @@ public class Game : MonoBehaviour
         unitBase.ResourcesFound += unitBaseUIManager.OnChangeFoundResources;
         unitBase.UnitsCountChanged += unitBaseUIManager.OnChangeUnitsInfo;
 
-        //Почему-то покупая юнита для одной базы, он записывается для всех
-
         unitBaseUIManager.ButtonManager.ScanButton.onClick.AddListener(OnScanButtonPressed);
         unitBaseUIManager.ButtonManager.SendUnitButton.onClick.AddListener(OnSendUnitButtonPressed);
         unitBaseUIManager.ButtonManager.BuyUnitButton.onClick.AddListener(OnBuyUnitButtonPressed);
@@ -75,12 +65,25 @@ public class Game : MonoBehaviour
         _currentUnitBaseUI.gameObject.SetActive(true);
     }
 
-    private void OnScanButtonPressed() =>
+    private void OnScanButtonPressed()
+    {
         _currentUnitBase.Scan();
+    }
 
-    private void OnSendUnitButtonPressed() =>
+    private void OnSendUnitButtonPressed()
+    {
         _currentUnitBase.SendUnit();
+    }
 
-    private void OnBuyUnitButtonPressed() =>
-        _currentUnitBase.TakeUnit();
+    private void OnBuyUnitButtonPressed()
+    {
+        if (_currentUnitBase.HasFreeSpace())
+        {
+            _currentUnitBase.AddUnit(_unitSpawner.SpawnUnit());
+        }
+        else
+        {
+            Debug.Log("No free positions");
+        }
+    }
 }

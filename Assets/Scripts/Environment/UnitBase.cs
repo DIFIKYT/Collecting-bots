@@ -6,7 +6,6 @@ public class UnitBase : MonoBehaviour
 {
     private const string ResourceName = "Resource";
 
-    [SerializeField] private Unit _unitPrefab;
     [SerializeField] private List<UnitSpawnPosition> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
@@ -20,23 +19,13 @@ public class UnitBase : MonoBehaviour
     private readonly List<Resource> _selectedResources = new();
     private readonly List<Unit> _units = new();
     private readonly Dictionary<ResourceType, Counter> _resources = new();
-    private UnitSpawner _unitSpawner;
     private ResourceSpawner _resourceSpawner;
     private int _number;
 
     public int Number => _number;
 
-    private void OnEnable()
-    {
-        if (_unitSpawner != null)
-            _unitSpawner.UnitSpawned += AddUnit;
-    }
-
     private void OnDisable()
     {
-        if (_unitSpawner != null)
-            _unitSpawner.UnitSpawned -= AddUnit;
-
         foreach (Unit unit in _units)
             unit.WasFreed -= OnWasFreed;
     }
@@ -46,7 +35,6 @@ public class UnitBase : MonoBehaviour
         if (other.TryGetComponent(out Unit unit))
         {
             Resource resource = unit.GetComponentInChildren<Resource>();
-
             if (resource != null)
             {
                 AddResource(resource.Type);
@@ -61,9 +49,8 @@ public class UnitBase : MonoBehaviour
         BaseWasClicked?.Invoke(_number);
     }
 
-    public void TakeSpawners(UnitSpawner unitSpawner, ResourceSpawner resourceSpawner)
+    public void TakeSpawners(ResourceSpawner resourceSpawner)
     {
-        _unitSpawner = unitSpawner;
         _resourceSpawner = resourceSpawner;
     }
 
@@ -77,26 +64,35 @@ public class UnitBase : MonoBehaviour
         _number = number;
     }
 
-    public void TakeUnit()
+    public void AddUnit(Unit unit)
     {
         foreach (UnitSpawnPosition spawnPosition in _unitSpawnPositions)
         {
             if (spawnPosition.IsOccupied == false)
             {
-                _unitSpawner.Spawn(spawnPosition.transform.position, transform.position);
                 spawnPosition.Occupy();
-                break;
+                unit.transform.position = spawnPosition.transform.position;
+                unit.WasFreed += OnWasFreed;
+                unit.TakeSpawnPositin(spawnPosition.transform.position);
+                unit.TakeBasePosition(transform.position);
+                _units.Add(unit);
+                UnitsCountChanged?.Invoke(_units);
+                return;
             }
         }
     }
 
-    public void SpawnUnits(float count)
+    public bool HasFreeSpace()
     {
-        for (int i = 0; i < count; i++)
+        foreach (UnitSpawnPosition spawnPosition in _unitSpawnPositions)
         {
-            _unitSpawner.Spawn(_unitSpawnPositions[i].transform.position, transform.position);
-            _unitSpawnPositions[i].Occupy();
+            if (spawnPosition.IsOccupied == false)
+            {
+                return true;
+            }
         }
+
+        return false;
     }
 
     public void Scan()
@@ -107,8 +103,7 @@ public class UnitBase : MonoBehaviour
         foreach (Collider collider in colliders)
         {
             Resource currentResource = collider.GetComponent<Resource>();
-
-            if (currentResource != null && _selectedResources.Contains(currentResource) == false)
+            if (currentResource != null && !_selectedResources.Contains(currentResource))
             {
                 _foundResources.Add(currentResource);
             }
@@ -119,7 +114,7 @@ public class UnitBase : MonoBehaviour
 
     public void SendUnit()
     {
-        if (_foundResources.Count <= 0)
+        if (_foundResources.Count == 0)
             return;
 
         Unit freeUnit = GetAvailableUnit();
@@ -138,7 +133,7 @@ public class UnitBase : MonoBehaviour
 
     private void AddResource(ResourceType resourceType)
     {
-        if (_resources.ContainsKey(resourceType) == false)
+        if (!_resources.ContainsKey(resourceType))
             NewResourceEntered?.Invoke(resourceType, this);
 
         _resources[resourceType].IncreaseCount();
@@ -149,20 +144,13 @@ public class UnitBase : MonoBehaviour
     {
         foreach (Unit unit in _units)
         {
-            if (unit.IsBusy == false)
+            if (!unit.IsBusy)
             {
                 return unit;
             }
         }
 
         return null;
-    }
-
-    private void AddUnit(Unit unit)
-    {
-        _units.Add(unit);
-        unit.WasFreed += OnWasFreed;
-        UnitsCountChanged?.Invoke(_units);
     }
 
     private void OnWasFreed(Unit unit)

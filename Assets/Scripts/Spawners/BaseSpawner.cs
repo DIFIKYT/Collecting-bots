@@ -57,7 +57,7 @@ public class BaseSpawner : MonoBehaviour
         UnitBase unitBase = Instantiate(_unitBasePrefab, transform);
 
         unitBase.gameObject.SetActive(false);
-        unitBase.TakeSpawners(_unitSpawner, _resourceSpawner);
+        unitBase.TakeSpawners(_resourceSpawner);
         unitBase.TakeNumber(_unitBaseNumber);
 
         _unitBaseNumber++;
@@ -74,7 +74,11 @@ public class BaseSpawner : MonoBehaviour
 
         if (_isFirstBase)
         {
-            unitBase.SpawnUnits(_unitsCountForFirstBase);
+            for(int i = 0; i < _unitsCountForFirstBase; i++)
+            {
+                unitBase.AddUnit(_unitSpawner.SpawnUnit());
+            }
+
             _isFirstBase = false;
         }
     }
