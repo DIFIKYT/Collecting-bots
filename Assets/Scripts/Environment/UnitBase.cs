@@ -9,9 +9,9 @@ public class UnitBase : MonoBehaviour
     [SerializeField] private List<UnitSpawnPosition> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
-    public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
     public event Action<List<Resource>> ResourcesFound;
     public event Action<List<Unit>> UnitsCountChanged;
+    public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
     public event Action<ResourceType, UnitBase> NewResourceEntered;
     public event Action<int> BaseWasClicked;
 
@@ -103,7 +103,7 @@ public class UnitBase : MonoBehaviour
         foreach (Collider collider in colliders)
         {
             Resource currentResource = collider.GetComponent<Resource>();
-            if (currentResource != null && !_selectedResources.Contains(currentResource))
+            if (currentResource != null && _selectedResources.Contains(currentResource) == false)
             {
                 _foundResources.Add(currentResource);
             }
@@ -133,7 +133,7 @@ public class UnitBase : MonoBehaviour
 
     private void AddResource(ResourceType resourceType)
     {
-        if (!_resources.ContainsKey(resourceType))
+        if (_resources.ContainsKey(resourceType) == false)
             NewResourceEntered?.Invoke(resourceType, this);
 
         _resources[resourceType].IncreaseCount();
@@ -144,7 +144,7 @@ public class UnitBase : MonoBehaviour
     {
         foreach (Unit unit in _units)
         {
-            if (!unit.IsBusy)
+            if (unit.IsBusy == false)
             {
                 return unit;
             }
