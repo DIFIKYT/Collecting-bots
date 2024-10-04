@@ -19,8 +19,9 @@ public class UnitBase : MonoBehaviour
     private readonly List<Resource> _selectedResources = new();
     private readonly List<Unit> _units = new();
     private readonly Dictionary<ResourceType, Counter> _resources = new();
-    private ResourceSpawner _resourceSpawner;
+    private readonly int _copperAmountForBuyUnit = 3;
     private int _number;
+    private ResourceSpawner _resourceSpawner;
 
     public int Number => _number;
 
@@ -76,11 +77,19 @@ public class UnitBase : MonoBehaviour
                 unit.TakeSpawnPositin(spawnPosition.transform.position);
                 unit.TakeBasePosition(transform.position);
                 _units.Add(unit);
+
+                if (IsResourcesEnough())
+                {
+                    _resources[ResourceType.Copper].DecreaseCount(_copperAmountForBuyUnit);
+                    ResourceCountChanged?.Invoke(_resources);
+                }
+
                 UnitsCountChanged?.Invoke(_units);
                 return;
             }
         }
     }
+
 
     public bool HasFreeSpace()
     {
@@ -93,6 +102,14 @@ public class UnitBase : MonoBehaviour
         }
 
         return false;
+    }
+
+    public bool IsResourcesEnough()
+    {
+        if (_resources.ContainsKey(ResourceType.Copper))
+            return _resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit;
+        else
+            return false;
     }
 
     public void Scan()

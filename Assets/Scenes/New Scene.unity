@@ -269,6 +269,7 @@ GameObject:
   - component: {fileID: 1473829330}
   - component: {fileID: 1473829335}
   - component: {fileID: 1473829336}
+  - component: {fileID: 1473829337}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -381,6 +382,21 @@ MonoBehaviour:
   _unitSpawner: {fileID: 1875386896}
   _unitBaseUIPrefab: {fileID: 4649588576101727625, guid: 71839799742ec9f45a7d67ecfa7b9a2a, type: 3}
   _canvas: {fileID: 1668749534}
+--- !u!114 &1473829337
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1473829329}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c462b75031b88b94dadd9325e6839f30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 1473829331}
+  _flagPrefab: {fileID: 2484800855219224583, guid: cf6a9e6eb818ec44cbd394d69a0f1963, type: 3}
+  _flagPreviewPrefab: {fileID: 8092373852964834143, guid: 1a1c3efd61aca2645b22fc88e6d8113c, type: 3}
 --- !u!1001 &1639134026
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -837,7 +853,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5652650150858819670, guid: 4073dff94d17cb841ba08f7fe356a972, type: 3}
       propertyPath: _spawnDelay
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

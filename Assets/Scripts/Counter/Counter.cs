@@ -14,6 +14,6 @@ public class Counter : MonoBehaviour
     public void IncreaseCount() =>
                 _count++;
 
-    //public void DecreaseCount() =>
-    //            _count--;
+    public void DecreaseCount(int amountForDecrease) =>
+                _count -= amountForDecrease;
 }

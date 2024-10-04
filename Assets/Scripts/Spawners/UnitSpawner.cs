@@ -9,8 +9,6 @@ public class UnitSpawner : MonoBehaviour
 
     [SerializeField] private Unit _unitPrefab;
 
-    public event Action<Unit> UnitSpawned;
-
     private ObjectPool<Unit> _pool;
 
     private void Awake()

@@ -77,13 +77,16 @@ public class Game : MonoBehaviour
 
     private void OnBuyUnitButtonPressed()
     {
-        if (_currentUnitBase.HasFreeSpace())
+        if (_currentUnitBase.IsResourcesEnough())
         {
-            _currentUnitBase.AddUnit(_unitSpawner.SpawnUnit());
-        }
-        else
-        {
-            Debug.Log("No free positions");
+            if (_currentUnitBase.HasFreeSpace())
+            {
+                _currentUnitBase.AddUnit(_unitSpawner.SpawnUnit());
+            }
+            else
+            {
+                Debug.Log("No free positions");
+            }
         }
     }
 }
