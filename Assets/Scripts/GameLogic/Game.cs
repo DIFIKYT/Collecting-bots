@@ -8,6 +8,7 @@ public class Game : MonoBehaviour
     [SerializeField] private UnitSpawner _unitSpawner;
     [SerializeField] private UnitBaseUIManager _unitBaseUIPrefab;
     [SerializeField] private Canvas _canvas;
+    [SerializeField] private BunnerBuilder _bunnerBuilder;
 
     private readonly Dictionary<int, UnitBaseUIManager> _unitBasesUI = new();
     private readonly Dictionary<UnitBaseUIManager, UnitBase> _unitBases = new();
@@ -17,6 +18,7 @@ public class Game : MonoBehaviour
     private void OnEnable()
     {
         _baseSpawner.BaseSpawned += OnUnitBaseSpawned;
+        _bunnerBuilder.BunnerPlaced += OnBunnerPlaced;
     }
 
     private void OnDisable()
@@ -29,6 +31,7 @@ public class Game : MonoBehaviour
             buttonManager.ScanButton.onClick.RemoveListener(OnScanButtonPressed);
             buttonManager.SendUnitButton.onClick.RemoveListener(OnSendUnitButtonPressed);
             buttonManager.BuyUnitButton.onClick.RemoveListener(OnBuyUnitButtonPressed);
+            buttonManager.SetBunnerButton.onClick.RemoveListener(OnPlaceBunnerButtonPressed);
         }
 
         foreach (UnitBase unitBase in _unitBases.Values)
@@ -53,6 +56,7 @@ public class Game : MonoBehaviour
         unitBaseUIManager.ButtonManager.ScanButton.onClick.AddListener(OnScanButtonPressed);
         unitBaseUIManager.ButtonManager.SendUnitButton.onClick.AddListener(OnSendUnitButtonPressed);
         unitBaseUIManager.ButtonManager.BuyUnitButton.onClick.AddListener(OnBuyUnitButtonPressed);
+        unitBaseUIManager.ButtonManager.SetBunnerButton.onClick.AddListener(OnPlaceBunnerButtonPressed);
     }
 
     private void ActiveUnitBase(int unitBaseNumber)
@@ -72,21 +76,37 @@ public class Game : MonoBehaviour
 
     private void OnSendUnitButtonPressed()
     {
-        _currentUnitBase.SendUnit();
+        _currentUnitBase.SendUnitToResource();
     }
 
     private void OnBuyUnitButtonPressed()
     {
-        if (_currentUnitBase.IsResourcesEnough())
+        if (_currentUnitBase.CanBuyUnit)
         {
-            if (_currentUnitBase.HasFreeSpace())
+            if (_currentUnitBase.IsResourcesEnough())
             {
-                _currentUnitBase.AddUnit(_unitSpawner.SpawnUnit());
-            }
-            else
-            {
-                Debug.Log("No free positions");
+                if (_currentUnitBase.HasFreeSpace())
+                {
+                    _currentUnitBase.AddUnit(_unitSpawner.SpawnUnit());
+                }
+                else
+                {
+                    Debug.Log("No free positions");
+                }
             }
         }
+    }
+
+    private void OnPlaceBunnerButtonPressed()
+    {
+        if(_currentUnitBase.IsBunnerPlaced == false)
+        {
+            _bunnerBuilder.PlaceBunnerPreview();
+        }
+    }
+
+    private void OnBunnerPlaced(Bunner bunner)
+    {
+        _currentUnitBase.TakeBunner(bunner);
     }
 }

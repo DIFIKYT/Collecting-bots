@@ -7,12 +7,23 @@ public class UnitMover : MonoBehaviour
     private const float RotateSpeed = 360f;
     private const float DistanceFromTargetPosition = 0.01f;
 
-    public void MoveQueue(MovementData movementData, Action onComplete)
+    public void MoveUnitToBunner(MovementData movementData, Vector3 bunnerPosition, Action onComplete)
     {
-        StartCoroutine(MoveAndRotateQueue(movementData, onComplete));
+        StartCoroutine(MoveToBunner(movementData, bunnerPosition));
     }
 
-    private IEnumerator MoveAndRotateQueue(MovementData movementData, Action onComplete)
+    public void Move(MovementData movementData, Action onComplete)
+    {
+        StartCoroutine(MoveQueue(movementData, onComplete));
+    }
+
+    private IEnumerator MoveToBunner(MovementData movementData, Vector3 bunnerPosition)
+    {
+        yield return RotateTo(movementData.UnitTransform, bunnerPosition);
+        yield return MoveTo(movementData.UnitTransform, bunnerPosition, movementData.MoveSpeed);
+    }
+
+    private IEnumerator MoveQueue(MovementData movementData, Action onComplete)
     {
         yield return RotateAndMove(movementData, movementData.TargetPosition);
         yield return RotateAndMove(movementData, movementData.BasePosition);

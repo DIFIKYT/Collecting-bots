@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,16 +15,27 @@ public class UnitBase : MonoBehaviour
     public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
     public event Action<ResourceType, UnitBase> NewResourceEntered;
     public event Action<int> BaseWasClicked;
+    public event Action<Vector3, Unit> BaseCreated;
 
     private readonly List<Resource> _foundResources = new();
     private readonly List<Resource> _selectedResources = new();
     private readonly List<Unit> _units = new();
     private readonly Dictionary<ResourceType, Counter> _resources = new();
     private readonly int _copperAmountForBuyUnit = 3;
-    private int _number;
+    private readonly int _ironAmountForBuyBase = 5;
+    private readonly float _delay = 0.5f;
     private ResourceSpawner _resourceSpawner;
+    private Bunner _bunner;
+    private Unit _unitBaseCreator;
 
-    public int Number => _number;
+    public int Number { get; private set; }
+    public bool IsBunnerPlaced { get; private set; }
+    public bool CanBuyUnit { get; private set; }
+
+    private void Awake()
+    {
+        CanBuyUnit = true;
+    }
 
     private void OnDisable()
     {
@@ -47,7 +59,14 @@ public class UnitBase : MonoBehaviour
 
     private void OnMouseDown()
     {
-        BaseWasClicked?.Invoke(_number);
+        BaseWasClicked?.Invoke(Number);
+    }
+
+    public void TakeBunner(Bunner bunner)
+    {
+        _bunner = bunner;
+        IsBunnerPlaced = true;
+        StartCoroutine(WaitUnit());
     }
 
     public void TakeSpawners(ResourceSpawner resourceSpawner)
@@ -55,14 +74,14 @@ public class UnitBase : MonoBehaviour
         _resourceSpawner = resourceSpawner;
     }
 
-    public void TakeNewDictionary(ResourceType resourceType, Counter counter)
+    public void TakeDictionary(ResourceType resourceType, Counter counter)
     {
         _resources.Add(resourceType, counter);
     }
 
     public void TakeNumber(int number)
     {
-        _number = number;
+        Number = number;
     }
 
     public void AddUnit(Unit unit)
@@ -74,6 +93,7 @@ public class UnitBase : MonoBehaviour
                 spawnPosition.Occupy();
                 unit.transform.position = spawnPosition.transform.position;
                 unit.WasFreed += OnWasFreed;
+                unit.BaseCreated += OnBaseCreated;
                 unit.TakeSpawnPositin(spawnPosition.transform.position);
                 unit.TakeBasePosition(transform.position);
                 _units.Add(unit);
@@ -90,7 +110,6 @@ public class UnitBase : MonoBehaviour
         }
     }
 
-
     public bool HasFreeSpace()
     {
         foreach (UnitSpawnPosition spawnPosition in _unitSpawnPositions)
@@ -104,12 +123,23 @@ public class UnitBase : MonoBehaviour
         return false;
     }
 
-    public bool IsResourcesEnough()
+    public void SendUnitToResource()
     {
-        if (_resources.ContainsKey(ResourceType.Copper))
-            return _resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit;
-        else
-            return false;
+        if (_foundResources.Count == 0)
+            return;
+
+        Unit freeUnit = GetAvailableUnit();
+        Resource resource = _foundResources[0];
+
+        if (freeUnit != null)
+        {
+            freeUnit.MoveTo(resource.transform.position);
+            freeUnit.SetResource(resource);
+            _foundResources.Remove(resource);
+            _selectedResources.Add(resource);
+        }
+
+        UnitsCountChanged?.Invoke(_units);
     }
 
     public void Scan()
@@ -129,23 +159,12 @@ public class UnitBase : MonoBehaviour
         ResourcesFound?.Invoke(_foundResources);
     }
 
-    public void SendUnit()
+    public bool IsResourcesEnough()
     {
-        if (_foundResources.Count == 0)
-            return;
-
-        Unit freeUnit = GetAvailableUnit();
-        Resource resource = _foundResources[0];
-
-        if (freeUnit != null)
-        {
-            freeUnit.MoveTo(resource.transform.position);
-            freeUnit.SetResource(resource);
-            _foundResources.Remove(resource);
-            _selectedResources.Add(resource);
-        }
-
-        UnitsCountChanged?.Invoke(_units);
+        if (_resources.ContainsKey(ResourceType.Copper))
+            return _resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit;
+        else
+            return false;
     }
 
     private void AddResource(ResourceType resourceType)
@@ -173,5 +192,55 @@ public class UnitBase : MonoBehaviour
     private void OnWasFreed(Unit unit)
     {
         UnitsCountChanged?.Invoke(_units);
+    }
+
+    private void ChangeState()
+    {
+        _unitBaseCreator = GetAvailableUnit();
+
+        if (IsBunnerPlaced)
+        {
+            CanBuyUnit = false;
+
+            StartCoroutine(WaitResource());
+        }
+    }
+
+    private void SendUnitToBunner()
+    {
+        _resources[ResourceType.Iron].DecreaseCount(_ironAmountForBuyBase);
+        _unitBaseCreator.MoveTo(_bunner.transform.position, _bunner);
+    }
+
+    private void OnBaseCreated(Vector3 newBasePosition)
+    {
+        BaseCreated?.Invoke(newBasePosition, _unitBaseCreator);
+        IsBunnerPlaced = false;
+        _bunner = null;
+        ChangeState();
+    }
+
+    private IEnumerator WaitResource()
+    {
+        while (_resources[ResourceType.Iron].Count < _ironAmountForBuyBase)
+        {
+            yield return null;
+        }
+
+        SendUnitToBunner();
+    }
+
+    private IEnumerator WaitUnit()
+    {
+        var delay = new WaitForSeconds(_delay);
+
+        while(_unitBaseCreator == null)
+        {
+            _unitBaseCreator = GetAvailableUnit();
+            yield return delay;
+        }
+
+        _unitBaseCreator.Occupy();
+        ChangeState();
     }
 }

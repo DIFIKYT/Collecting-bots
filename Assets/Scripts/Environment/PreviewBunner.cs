@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BunnerPreview : MonoBehaviour
+public class PreviewBunner : MonoBehaviour
 {
     public bool IsActive => gameObject.activeSelf;
 
@@ -12,10 +12,5 @@ public class BunnerPreview : MonoBehaviour
     public void Disable()
     {
         gameObject.SetActive(false);
-    }
-
-    public void SetPosition(Vector3 position)
-    {
-        transform.position = position;
     }
 }

@@ -320,7 +320,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Set flag
+  m_text: Set bunner
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -860,7 +860,7 @@ GameObject:
   - component: {fileID: 6623008882998675830}
   - component: {fileID: 2734646874953697638}
   m_Layer: 5
-  m_Name: SetFlag
+  m_Name: SetBunner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1291,6 +1291,7 @@ MonoBehaviour:
   _scanButton: {fileID: 8402141126011262877}
   _sendUnitButton: {fileID: 2592701202703712263}
   _buyUnitButton: {fileID: 118579135194616941}
+  _setBunnerButton: {fileID: 2734646874953697638}
 --- !u!1 &7568616999633241099
 GameObject:
   m_ObjectHideFlags: 0
@@ -1718,5 +1719,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d02c12a66141614f82b99dba28d757f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _textManager: {fileID: 5852744884617460400}
   _buttonManager: {fileID: 884267777684190328}
+  _textManager: {fileID: 5852744884617460400}

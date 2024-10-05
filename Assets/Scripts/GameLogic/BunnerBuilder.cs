@@ -1,52 +1,95 @@
+using System;
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class BunnerBuilder : MonoBehaviour
 {
     [SerializeField] private Camera _camera;
-    [SerializeField] private Bunner _flagPrefab;
-    [SerializeField] private BunnerPreview _flagPreviewPrefab;
+    [SerializeField] private Bunner _bunnerPrefab;
+    [SerializeField] private PreviewBunner _bunnerPreview;
+    [SerializeField] private LayerMask _groundLayer;
 
-    private readonly int _distance = 100;
-    private Transform _objectHits;
-    private Ray _ray;
+    public event Action<Bunner> BunnerPlaced;
 
-    private void Update()
+    private bool _isPlacing;
+
+    private void Start()
     {
-        _ray = _camera.ScreenPointToRay(Input.mousePosition);
-        Debug.DrawRay(_ray.origin, _ray.direction * _distance, Color.red);
+        _bunnerPreview.Disable();
+    }
 
-        if (Physics.Raycast(_ray, out RaycastHit hit, Mathf.Infinity))
+    public void PlaceBunnerPreview()
+    {
+        if (_isPlacing)
         {
-            //if(hit.transform.TryGetComponent(out Ground _))
-            //{
-            //    _objectHits = hit.transform;
-            //}
-
-            _objectHits = hit.transform;
-            //print(objectHits);
+            CancelPlacement();
+            StopCoroutine(MoveBunnerPreview());
+        }
+        else
+        {
+            StartPlacement();
+            StartCoroutine(MoveBunnerPreview());
         }
     }
 
-    private void FixedUpdate()
+    private void StartPlacement()
     {
-        if (Input.GetMouseButtonDown(1))
+        _isPlacing = true;
+        _bunnerPreview.Enable();
+    }
+
+    private void CancelPlacement()
+    {
+        _isPlacing = false;
+        _bunnerPreview.Disable();
+    }
+
+    private void PlaceBunner()
+    {
+        Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundLayer))
         {
-            foreach (Transform objectHit in _objectHits)
+            CancelPlacement();
+            Bunner bunner = Instantiate(_bunnerPrefab, hit.point, Quaternion.identity);
+            BunnerPlaced?.Invoke(bunner);
+        }
+    }
+
+    private void DestroyBunner(Bunner bunner)
+    {
+        Destroy(bunner.gameObject);
+    }
+
+    private IEnumerator MoveBunnerPreview()
+    {
+        Ray ray;
+        RaycastHit hit;
+
+        while (_isPlacing)
+        {
+            ray = _camera.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, _groundLayer))
             {
-                if (objectHit.TryGetComponent(out Ground _))
-                {
-                    if (_flagPreviewPrefab.IsActive == false)
-                    {
-                        _flagPreviewPrefab.Enable();
-                        _flagPreviewPrefab.SetPosition(objectHit.transform.position);
-                    }
-                }
+                _bunnerPreview.transform.position = hit.point;
+                MouseInput();
             }
+
+            yield return null;
         }
     }
 
-    private void Build()
+    private void MouseInput()
     {
-
+        if (Input.GetMouseButtonDown(0))
+        {
+            PlaceBunner();
+        }
+        else if (Input.GetMouseButtonDown(1))
+        {
+            CancelPlacement();
+        }
     }
 }

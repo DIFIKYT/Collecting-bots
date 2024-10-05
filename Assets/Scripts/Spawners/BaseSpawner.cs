@@ -38,14 +38,6 @@ public class BaseSpawner : MonoBehaviour
         Spawn(_firstBaseSpawnCoordinate);
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            Spawn(new Vector3(UnityEngine.Random.Range(-50, 50), 0, UnityEngine.Random.Range(-50, 50)));
-        }
-    }
-
     public void Spawn(Vector3 spawnPosition)
     {
         _spawnPosition = spawnPosition;
@@ -98,6 +90,6 @@ public class BaseSpawner : MonoBehaviour
     private void GetDictionary(ResourceType resourceType, UnitBase unitBase)
     {
         Counter _counter = new(0);
-        unitBase.TakeNewDictionary(resourceType, _counter);
+        unitBase.TakeDictionary(resourceType, _counter);
     }
 }
