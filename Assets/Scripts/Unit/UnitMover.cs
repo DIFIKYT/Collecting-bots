@@ -9,7 +9,7 @@ public class UnitMover : MonoBehaviour
 
     public void MoveUnitToBunner(MovementData movementData, Vector3 bunnerPosition, Action onComplete)
     {
-        StartCoroutine(MoveToBunner(movementData, bunnerPosition));
+        StartCoroutine(MoveToBunner(movementData, bunnerPosition, onComplete));
     }
 
     public void Move(MovementData movementData, Action onComplete)
@@ -17,10 +17,11 @@ public class UnitMover : MonoBehaviour
         StartCoroutine(MoveQueue(movementData, onComplete));
     }
 
-    private IEnumerator MoveToBunner(MovementData movementData, Vector3 bunnerPosition)
+    private IEnumerator MoveToBunner(MovementData movementData, Vector3 bunnerPosition, Action onComplete)
     {
         yield return RotateTo(movementData.UnitTransform, bunnerPosition);
         yield return MoveTo(movementData.UnitTransform, bunnerPosition, movementData.MoveSpeed);
+        onComplete?.Invoke();
     }
 
     private IEnumerator MoveQueue(MovementData movementData, Action onComplete)

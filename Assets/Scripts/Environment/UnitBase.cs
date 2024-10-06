@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//Осталось только сделать возможность передвинуть баннер при повтором нажатии на кнопку уставки баннера
+
 public class UnitBase : MonoBehaviour
 {
     private const string ResourceName = "Resource";
@@ -15,7 +17,7 @@ public class UnitBase : MonoBehaviour
     public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
     public event Action<ResourceType, UnitBase> NewResourceEntered;
     public event Action<int> BaseWasClicked;
-    public event Action<Vector3, Unit> BaseCreated;
+    public event Action<Vector3, Unit, Bunner> UnitBaseCreated;
 
     private readonly List<Resource> _foundResources = new();
     private readonly List<Resource> _selectedResources = new();
@@ -23,11 +25,11 @@ public class UnitBase : MonoBehaviour
     private readonly Dictionary<ResourceType, Counter> _resources = new();
     private readonly int _copperAmountForBuyUnit = 3;
     private readonly int _ironAmountForBuyBase = 5;
-    private readonly float _delay = 0.5f;
     private ResourceSpawner _resourceSpawner;
     private Bunner _bunner;
     private Unit _unitBaseCreator;
 
+    public int UnitsCount => _units.Count;
     public int Number { get; private set; }
     public bool IsBunnerPlaced { get; private set; }
     public bool CanBuyUnit { get; private set; }
@@ -93,8 +95,7 @@ public class UnitBase : MonoBehaviour
                 spawnPosition.Occupy();
                 unit.transform.position = spawnPosition.transform.position;
                 unit.WasFreed += OnWasFreed;
-                unit.BaseCreated += OnBaseCreated;
-                unit.TakeSpawnPositin(spawnPosition.transform.position);
+                unit.TakeSpawnPositin(spawnPosition);
                 unit.TakeBasePosition(transform.position);
                 _units.Add(unit);
 
@@ -196,32 +197,49 @@ public class UnitBase : MonoBehaviour
 
     private void ChangeState()
     {
-        _unitBaseCreator = GetAvailableUnit();
-
         if (IsBunnerPlaced)
         {
             CanBuyUnit = false;
 
             StartCoroutine(WaitResource());
         }
+        else
+        {
+            CanBuyUnit = true;
+        }
     }
 
     private void SendUnitToBunner()
     {
         _resources[ResourceType.Iron].DecreaseCount(_ironAmountForBuyBase);
+        ResourceCountChanged?.Invoke(_resources);
         _unitBaseCreator.MoveTo(_bunner.transform.position, _bunner);
     }
 
-    private void OnBaseCreated(Vector3 newBasePosition)
+    private void OnUnitBaseCreated(Vector3 newBasePosition)
     {
-        BaseCreated?.Invoke(newBasePosition, _unitBaseCreator);
+        newBasePosition.y = transform.position.y;
+        _unitBaseCreator.UnitBaseCreated -= OnUnitBaseCreated;
+        _unitBaseCreator.WasFreed -= OnWasFreed;
+        _unitBaseCreator.StartPosition.FreeUp();
+        UnitBaseCreated?.Invoke(newBasePosition, _unitBaseCreator, _bunner);
+        _units.Remove(_unitBaseCreator);
         IsBunnerPlaced = false;
         _bunner = null;
+        _unitBaseCreator = null;
         ChangeState();
     }
 
     private IEnumerator WaitResource()
     {
+        if (_resources.ContainsKey(ResourceType.Iron) == false)
+        {
+            while (_resources.ContainsKey(ResourceType.Iron) == false)
+            {
+                yield return null;
+            }
+        }
+
         while (_resources[ResourceType.Iron].Count < _ironAmountForBuyBase)
         {
             yield return null;
@@ -232,14 +250,13 @@ public class UnitBase : MonoBehaviour
 
     private IEnumerator WaitUnit()
     {
-        var delay = new WaitForSeconds(_delay);
-
         while(_unitBaseCreator == null)
         {
             _unitBaseCreator = GetAvailableUnit();
-            yield return delay;
+            yield return null;
         }
 
+        _unitBaseCreator.UnitBaseCreated += OnUnitBaseCreated;
         _unitBaseCreator.Occupy();
         ChangeState();
     }

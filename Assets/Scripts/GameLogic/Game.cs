@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ public class Game : MonoBehaviour
 
     private readonly Dictionary<int, UnitBaseUIManager> _unitBasesUI = new();
     private readonly Dictionary<UnitBaseUIManager, UnitBase> _unitBases = new();
+    private readonly int _minUnitsCountForPlaceBunner = 2;
     private UnitBaseUIManager _currentUnitBaseUI;
     private UnitBase _currentUnitBase;
 
@@ -36,7 +38,8 @@ public class Game : MonoBehaviour
 
         foreach (UnitBase unitBase in _unitBases.Values)
         {
-            unitBase.BaseWasClicked -= ActiveUnitBase;
+            unitBase.BaseWasClicked -= OnBaseWasClicked;
+            unitBase.UnitBaseCreated -= OnUnitBaseCreated;
         }
     }
 
@@ -48,10 +51,11 @@ public class Game : MonoBehaviour
         _unitBasesUI.Add(unitBase.Number, unitBaseUIManager);
         _unitBases.Add(unitBaseUIManager, unitBase);
 
-        unitBase.BaseWasClicked += ActiveUnitBase;
+        unitBase.BaseWasClicked += OnBaseWasClicked;
         unitBase.ResourceCountChanged += unitBaseUIManager.OnChangeResources;
         unitBase.ResourcesFound += unitBaseUIManager.OnChangeFoundResources;
         unitBase.UnitsCountChanged += unitBaseUIManager.OnChangeUnitsInfo;
+        unitBase.UnitBaseCreated += OnUnitBaseCreated;
 
         unitBaseUIManager.ButtonManager.ScanButton.onClick.AddListener(OnScanButtonPressed);
         unitBaseUIManager.ButtonManager.SendUnitButton.onClick.AddListener(OnSendUnitButtonPressed);
@@ -59,7 +63,7 @@ public class Game : MonoBehaviour
         unitBaseUIManager.ButtonManager.SetBunnerButton.onClick.AddListener(OnPlaceBunnerButtonPressed);
     }
 
-    private void ActiveUnitBase(int unitBaseNumber)
+    private void OnBaseWasClicked(int unitBaseNumber)
     {
         if (_currentUnitBaseUI != null)
             _currentUnitBaseUI.gameObject.SetActive(false);
@@ -99,7 +103,7 @@ public class Game : MonoBehaviour
 
     private void OnPlaceBunnerButtonPressed()
     {
-        if(_currentUnitBase.IsBunnerPlaced == false)
+        if(_currentUnitBase.IsBunnerPlaced == false && _currentUnitBase.UnitsCount >= _minUnitsCountForPlaceBunner)
         {
             _bunnerBuilder.PlaceBunnerPreview();
         }
@@ -108,5 +112,12 @@ public class Game : MonoBehaviour
     private void OnBunnerPlaced(Bunner bunner)
     {
         _currentUnitBase.TakeBunner(bunner);
+    }
+
+    private void OnUnitBaseCreated(Vector3 newBaseSpawnPosition, Unit unit, Bunner bunner)
+    {
+        UnitBase unitBase = _baseSpawner.Spawn(newBaseSpawnPosition);
+        unitBase.AddUnit(unit);
+        _bunnerBuilder.DestroyBunner(bunner);
     }
 }

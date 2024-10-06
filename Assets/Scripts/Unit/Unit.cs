@@ -13,15 +13,16 @@ public class Unit : MonoBehaviour
     [SerializeField] private UnitTrigger _unitTrigger;
 
     public event Action<Unit> WasFreed;
-    public event Action<Vector3> BaseCreated;
+    public event Action<Vector3> UnitBaseCreated;
 
     private readonly float _timeCreateBase = 5;
     private Resource _resource;
-    private Vector3 _startPosition;
+    //private UnitSpawnPosition _startPosition;
     private Vector3 _basePosition;
     private bool _isBusy;
     private bool _canTake;
 
+    public UnitSpawnPosition StartPosition {  get; private set; }
     public bool IsBusy => _isBusy;
 
     private void OnEnable()
@@ -38,12 +39,12 @@ public class Unit : MonoBehaviour
     {
         MovementData movementData;
 
-        targetPosition.y = _startPosition.y;
-        movementData = new(transform, targetPosition, _basePosition, _startPosition, _config.MoveSpeed);
+        targetPosition.y = StartPosition.transform.position.y;
+        movementData = new(transform, targetPosition, _basePosition, StartPosition.transform.position, _config.MoveSpeed);
 
         if (bunner != null)
         {
-            _unitMover.MoveUnitToBunner(movementData, bunner.transform.position, () =>
+            _unitMover.MoveUnitToBunner(movementData, targetPosition, () =>
             {
                 StartCoroutine(CreatingNewBase());
             });
@@ -77,17 +78,12 @@ public class Unit : MonoBehaviour
     public void TakeBasePosition(Vector3 basePosition)
     {
         _basePosition = basePosition;
-        _basePosition.y = _startPosition.y;
+        _basePosition.y = StartPosition.transform.position.y;
     }
 
-    public void TakeSpawnPositin(Vector3 startPosition)
+    public void TakeSpawnPositin(UnitSpawnPosition startPosition)
     {
-        _startPosition = startPosition;
-    }
-
-    public void FreeUp()
-    {
-        _isBusy = false;
+        StartPosition = startPosition;
     }
 
     public void Occupy()
@@ -115,6 +111,6 @@ public class Unit : MonoBehaviour
         yield return delay;
 
         _isBusy = false;
-        BaseCreated?.Invoke(transform.position);
+        UnitBaseCreated?.Invoke(transform.position);
     }
 }

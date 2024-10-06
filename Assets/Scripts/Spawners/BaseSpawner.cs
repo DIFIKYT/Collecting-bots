@@ -38,10 +38,10 @@ public class BaseSpawner : MonoBehaviour
         Spawn(_firstBaseSpawnCoordinate);
     }
 
-    public void Spawn(Vector3 spawnPosition)
+    public UnitBase Spawn(Vector3 spawnPosition)
     {
         _spawnPosition = spawnPosition;
-        _pool.Get();
+        return _pool.Get();
     }
 
     private UnitBase Create()

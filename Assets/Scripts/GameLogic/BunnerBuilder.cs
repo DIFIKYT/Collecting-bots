@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class BunnerBuilder : MonoBehaviour
@@ -33,6 +32,11 @@ public class BunnerBuilder : MonoBehaviour
         }
     }
 
+    public void DestroyBunner(Bunner bunner)
+    {
+        Destroy(bunner.gameObject);
+    }
+
     private void StartPlacement()
     {
         _isPlacing = true;
@@ -55,11 +59,6 @@ public class BunnerBuilder : MonoBehaviour
             Bunner bunner = Instantiate(_bunnerPrefab, hit.point, Quaternion.identity);
             BunnerPlaced?.Invoke(bunner);
         }
-    }
-
-    private void DestroyBunner(Bunner bunner)
-    {
-        Destroy(bunner.gameObject);
     }
 
     private IEnumerator MoveBunnerPreview()
