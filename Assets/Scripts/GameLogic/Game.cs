@@ -56,6 +56,7 @@ public class Game : MonoBehaviour
         unitBase.ResourcesFound += unitBaseUIManager.OnChangeFoundResources;
         unitBase.UnitsCountChanged += unitBaseUIManager.OnChangeUnitsInfo;
         unitBase.UnitBaseCreated += OnUnitBaseCreated;
+        unitBase.BunnerMoved += OnBunnerMove;
 
         unitBaseUIManager.ButtonManager.ScanButton.onClick.AddListener(OnScanButtonPressed);
         unitBaseUIManager.ButtonManager.SendUnitButton.onClick.AddListener(OnSendUnitButtonPressed);
@@ -103,7 +104,7 @@ public class Game : MonoBehaviour
 
     private void OnPlaceBunnerButtonPressed()
     {
-        if(_currentUnitBase.IsBunnerPlaced == false && _currentUnitBase.UnitsCount >= _minUnitsCountForPlaceBunner)
+        if (_currentUnitBase.CanMoveBunner && _currentUnitBase.UnitsCount >= _minUnitsCountForPlaceBunner)
         {
             _bunnerBuilder.PlaceBunnerPreview();
         }
@@ -118,6 +119,11 @@ public class Game : MonoBehaviour
     {
         UnitBase unitBase = _baseSpawner.Spawn(newBaseSpawnPosition);
         unitBase.AddUnit(unit);
+        _bunnerBuilder.DestroyBunner(bunner);
+    }
+
+    private void OnBunnerMove(Bunner bunner)
+    {
         _bunnerBuilder.DestroyBunner(bunner);
     }
 }

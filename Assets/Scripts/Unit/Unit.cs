@@ -1,7 +1,6 @@
 using UnityEngine;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 
 [RequireComponent(typeof(UnitMover))]
 public class Unit : MonoBehaviour
@@ -17,7 +16,6 @@ public class Unit : MonoBehaviour
 
     private readonly float _timeCreateBase = 5;
     private Resource _resource;
-    //private UnitSpawnPosition _startPosition;
     private Vector3 _basePosition;
     private bool _isBusy;
     private bool _canTake;
