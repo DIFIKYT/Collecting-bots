@@ -9,8 +9,8 @@ public class UnitBaseUIManager : MonoBehaviour
 
     public ButtonManager ButtonManager => _buttonManager;
 
-    public void OnChangeFoundResources(List<Resource> foundResources) =>
-        _textManager.ChangeFoundResources(foundResources);
+    public void OnChangeFoundResources(List<Resource> foundResources, Vector3 basePosition) =>
+        _textManager.ChangeFoundResources(foundResources, basePosition);
 
     public void OnChangeResources(Dictionary<ResourceType, Counter> resources) =>
         _textManager.ChangeResources(resources);

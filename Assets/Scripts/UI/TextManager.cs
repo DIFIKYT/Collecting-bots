@@ -16,14 +16,14 @@ public class TextManager : MonoBehaviour
             _resourcesCount.text += $"{resourceType} count: {resources[resourceType].Count}\n";
     }
 
-    public void ChangeFoundResources(List<Resource> foundResources)
+    public void ChangeFoundResources(List<Resource> foundResources, Vector3 basePosition)
     {
         _foundResources.text = null;
 
         foreach (Resource resource in foundResources)
         {
             _foundResources.text += $"{resource.Type}: distance from base " +
-                $"{Mathf.Round(Vector3.Distance(transform.position, resource.transform.position))} \n";
+                $"{Mathf.Round(Vector3.Distance(basePosition, resource.transform.position))} \n";
         }
     }
 

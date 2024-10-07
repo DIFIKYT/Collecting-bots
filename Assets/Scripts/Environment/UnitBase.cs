@@ -10,7 +10,7 @@ public class UnitBase : MonoBehaviour
     [SerializeField] private List<UnitSpawnPosition> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
 
-    public event Action<List<Resource>> ResourcesFound;
+    public event Action<List<Resource>, Vector3> ResourcesFound;
     public event Action<List<Unit>> UnitsCountChanged;
     public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
     public event Action<ResourceType, UnitBase> NewResourceEntered;
@@ -159,7 +159,7 @@ public class UnitBase : MonoBehaviour
             }
         }
 
-        ResourcesFound?.Invoke(_foundResources);
+        ResourcesFound?.Invoke(_foundResources, transform.position);
     }
 
     public bool IsResourcesEnough()
