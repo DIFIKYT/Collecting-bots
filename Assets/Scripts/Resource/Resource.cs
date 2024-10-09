@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-public class Resource : MonoBehaviour
+public class Resource : Spawnable
 {
     [SerializeField] private ResourceType _type;
 

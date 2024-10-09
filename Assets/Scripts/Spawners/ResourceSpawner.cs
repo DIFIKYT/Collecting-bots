@@ -1,34 +1,15 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Pool;
 
-public class ResourceSpawner : MonoBehaviour
+public class ResourceSpawner : Spawner<Resource>
 {
     private const string ResourceName = "Resource";
     private const string UnitBaseName = "UnitBase";
     private const float ScaleDivisionFactor = 2.0f;
-    private const int DefaultCapacity = 100;
-    private const int MaxSize = 100;
 
-    [SerializeField] private List<Resource> _resourcePrefabs;
     [SerializeField] private Ground _ground;
     [SerializeField] private float _spawnDelay;
     [SerializeField] private float _spawnHeight;
-
-    private ObjectPool<Resource> _pool;
-
-    private void Awake()
-    {
-        _pool = new ObjectPool<Resource>(
-            createFunc: Create,
-            actionOnGet: OnGet,
-            actionOnRelease: OnRelease,
-            actionOnDestroy: Destroy,
-            collectionCheck: true,
-            defaultCapacity: DefaultCapacity,
-            maxSize: MaxSize);
-    }
 
     private void Start()
     {
@@ -37,31 +18,24 @@ public class ResourceSpawner : MonoBehaviour
 
     public void ReturnToPool(Resource resource)
     {
-        _pool.Release(resource);
+        Pool.Release(resource);
     }
 
-    private Resource Create()
+    protected override Resource Create()
     {
-        Resource resource = Instantiate(_resourcePrefabs[Random.Range(0, _resourcePrefabs.Count)], transform);
-        resource.enabled = true;
-        return resource;
+        return Instantiate(Prefabs[Random.Range(0, Prefabs.Count)], transform);
     }
 
-    private void OnGet(Resource resource)
+    protected override void OnGet(Resource resource)
     {
         resource.transform.position = GetSpawnPosition();
-        resource.gameObject.SetActive(true);
+        base.OnGet(resource);
     }
 
-    private void OnRelease(Resource resource)
+    protected override void OnRelease(Resource resource)
     {
         resource.transform.SetParent(transform, worldPositionStays: false);
-        resource.gameObject.SetActive(false);
-    }
-
-    private void Destroy(Resource resource)
-    {
-        Destroy(resource.gameObject);
+        base.OnRelease(resource);
     }
 
     private Vector3 GetSpawnPosition()
@@ -94,8 +68,8 @@ public class ResourceSpawner : MonoBehaviour
 
         while (true)
         {
-            if (_pool != null)
-                _pool.Get();
+            if (Pool != null)
+                Pool.Get();
 
             yield return spawnDelay;
         }

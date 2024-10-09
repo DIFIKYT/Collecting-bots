@@ -3,20 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UnitBase : MonoBehaviour
+public class UnitBase : Spawnable
 {
     private const string ResourceName = "Resource";
 
     [SerializeField] private List<UnitSpawnPosition> _unitSpawnPositions;
     [SerializeField] private float _scanRange;
-
-    public event Action<List<Resource>, Vector3> ResourcesFound;
-    public event Action<List<Unit>> UnitsCountChanged;
-    public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
-    public event Action<ResourceType, UnitBase> NewResourceEntered;
-    public event Action<int> BaseWasClicked;
-    public event Action<Vector3, Unit, Bunner> UnitBaseCreated;
-    public event Action<Bunner> BunnerMoved;
 
     private readonly List<Resource> _foundResources = new();
     private readonly List<Resource> _selectedResources = new();
@@ -27,6 +19,14 @@ public class UnitBase : MonoBehaviour
     private ResourceSpawner _resourceSpawner;
     private Bunner _bunner;
     private Unit _unitBaseCreator;
+
+    public event Action<List<Resource>, Vector3> ResourcesFound;
+    public event Action<List<Unit>> UnitsCountChanged;
+    public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
+    public event Action<ResourceType, UnitBase> NewResourceEntered;
+    public event Action<int> BaseWasClicked;
+    public event Action<Vector3, Unit, Bunner> UnitBaseCreated;
+    public event Action<Bunner> BunnerMoved;
 
     public int UnitsCount => _units.Count;
     public int Number { get; private set; }
@@ -49,8 +49,9 @@ public class UnitBase : MonoBehaviour
     {
         if (other.TryGetComponent(out Unit unit))
         {
-            Resource resource = unit.GetComponentInChildren<Resource>();
-            if (resource != null)
+            Resource resource = unit.Resource;
+
+            if (resource != null && unit.IsResourceTaked)
             {
                 AddResource(resource.Type);
                 _resourceSpawner.ReturnToPool(unit.GetResource());

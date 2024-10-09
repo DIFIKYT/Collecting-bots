@@ -9,9 +9,9 @@ public class BunnerBuilder : MonoBehaviour
     [SerializeField] private PreviewBunner _bunnerPreview;
     [SerializeField] private LayerMask _groundLayer;
 
-    public event Action<Bunner> BunnerPlaced;
-
     private bool _isPlacing;
+
+    public event Action<Bunner> BunnerPlaced;
 
     private void Start()
     {

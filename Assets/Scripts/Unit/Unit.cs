@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 
 [RequireComponent(typeof(UnitMover))]
-public class Unit : MonoBehaviour
+public class Unit : Spawnable
 {
     private const float ResourceOffsetDistance = 1.5f;
 
@@ -11,17 +11,19 @@ public class Unit : MonoBehaviour
     [SerializeField] private UnitConfig _config;
     [SerializeField] private UnitTrigger _unitTrigger;
 
+    private readonly float _timeCreateBase = 5;
+    private bool _isBusy;
+    private bool _canTake;
+    private Vector3 _basePosition;
+    private Resource _resource;
+
     public event Action<Unit> WasFreed;
     public event Action<Vector3> UnitBaseCreated;
 
-    private readonly float _timeCreateBase = 5;
-    private Resource _resource;
-    private Vector3 _basePosition;
-    private bool _isBusy;
-    private bool _canTake;
-
     public UnitSpawnPosition StartPosition {  get; private set; }
+    public Resource Resource => _resource;
     public bool IsBusy => _isBusy;
+    public bool IsResourceTaked { get; private set; }
 
     private void OnEnable()
     {
@@ -64,6 +66,7 @@ public class Unit : MonoBehaviour
     {
         Resource resourceForReturn = _resource;
         _resource = null;
+        IsResourceTaked = false;
 
         return resourceForReturn;
     }
@@ -94,6 +97,7 @@ public class Unit : MonoBehaviour
         if (_canTake == false || resource != _resource)
             return;
 
+        IsResourceTaked = true;
         _isBusy = true;
         _canTake = false;
         resource.transform.SetParent(transform, worldPositionStays: false);
