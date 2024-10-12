@@ -4,7 +4,6 @@ using UnityEngine;
 public class BaseSpawner : Spawner<UnitBase>
 {
     [SerializeField] private UnitSpawner _unitSpawner;
-    [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private Vector3 _firstBaseSpawnCoordinate;
 
     private readonly int _unitsCountForFirstBase = 3;
@@ -29,7 +28,6 @@ public class BaseSpawner : Spawner<UnitBase>
     {
         UnitBase unitBase = base.Create();
 
-        unitBase.TakeSpawners(_resourceSpawner);
         unitBase.TakeNumber(_unitBaseNumber);
 
         _unitBaseNumber++;

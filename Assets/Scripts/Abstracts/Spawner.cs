@@ -44,8 +44,8 @@ public abstract class Spawner<T> : MonoBehaviour where T : Spawnable
         Destroy(spawnable.gameObject);
     }
 
-    //private void ReturnToPool(Spawnable spawnable)
-    //{
-
-    //}
+    public void ReturnToPool(T spawnable)
+    {
+        Pool.Release(spawnable);
+    }
 }

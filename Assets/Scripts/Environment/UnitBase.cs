@@ -5,32 +5,25 @@ using UnityEngine;
 
 public class UnitBase : Spawnable
 {
-    private const string ResourceName = "Resource";
-
     [SerializeField] private List<UnitSpawnPosition> _unitSpawnPositions;
-    [SerializeField] private float _scanRange;
 
-    private readonly List<Resource> _foundResources = new();
-    private readonly List<Resource> _selectedResources = new();
     private readonly List<Unit> _units = new();
     private readonly Dictionary<ResourceType, Counter> _resources = new();
     private readonly int _copperAmountForBuyUnit = 3;
     private readonly int _ironAmountForBuyBase = 5;
-    private ResourceSpawner _resourceSpawner;
     private Bunner _bunner;
     private Unit _unitBaseCreator;
 
-    public event Action<List<Resource>, Vector3> ResourcesFound;
-    public event Action<List<Unit>> UnitsCountChanged;
     public event Action<Dictionary<ResourceType, Counter>> ResourceCountChanged;
+    public event Action<Resource> ResourceEntered;
     public event Action<ResourceType, UnitBase> NewResourceEntered;
-    public event Action<int> BaseWasClicked;
     public event Action<Vector3, Unit, Bunner> UnitBaseCreated;
     public event Action<Bunner> BunnerMoved;
+    public event Action<UnitBase> CopperEnough;
 
-    public int UnitsCount => _units.Count;
+    public List<Unit> Units => _units;
     public int Number { get; private set; }
-    public bool CanMoveBunner {  get; private set; }
+    public bool CanMoveBunner { get; private set; }
     public bool CanBuyUnit { get; private set; }
 
     private void Awake()
@@ -39,30 +32,18 @@ public class UnitBase : Spawnable
         CanMoveBunner = true;
     }
 
-    private void OnDisable()
-    {
-        foreach (Unit unit in _units)
-            unit.WasFreed -= OnWasFreed;
-    }
-
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out Unit unit))
         {
             Resource resource = unit.Resource;
 
-            if (resource != null && unit.IsResourceTaked)
+            if (resource != null && unit.IsResourceTaked && _units.Contains(unit))
             {
                 AddResource(resource.Type);
-                _resourceSpawner.ReturnToPool(unit.GetResource());
-                _selectedResources.Remove(resource);
+                ResourceEntered?.Invoke(unit.GetResource());
             }
         }
-    }
-
-    private void OnMouseDown()
-    {
-        BaseWasClicked?.Invoke(Number);
     }
 
     public void TakeBunner(Bunner bunner)
@@ -72,11 +53,6 @@ public class UnitBase : Spawnable
 
         _bunner = bunner;
         StartCoroutine(WaitUnit());
-    }
-
-    public void TakeSpawners(ResourceSpawner resourceSpawner)
-    {
-        _resourceSpawner = resourceSpawner;
     }
 
     public void TakeDictionary(ResourceType resourceType, Counter counter)
@@ -97,7 +73,6 @@ public class UnitBase : Spawnable
             {
                 spawnPosition.Occupy();
                 unit.transform.position = spawnPosition.transform.position;
-                unit.WasFreed += OnWasFreed;
                 unit.TakeSpawnPositin(spawnPosition);
                 unit.TakeBasePosition(transform.position);
                 _units.Add(unit);
@@ -108,7 +83,6 @@ public class UnitBase : Spawnable
                     ResourceCountChanged?.Invoke(_resources);
                 }
 
-                UnitsCountChanged?.Invoke(_units);
                 return;
             }
         }
@@ -127,42 +101,6 @@ public class UnitBase : Spawnable
         return false;
     }
 
-    public void SendUnitToResource()
-    {
-        if (_foundResources.Count == 0)
-            return;
-
-        Unit freeUnit = GetAvailableUnit();
-        Resource resource = _foundResources[0];
-
-        if (freeUnit != null)
-        {
-            freeUnit.MoveTo(resource.transform.position);
-            freeUnit.SetResource(resource);
-            _foundResources.Remove(resource);
-            _selectedResources.Add(resource);
-        }
-
-        UnitsCountChanged?.Invoke(_units);
-    }
-
-    public void Scan()
-    {
-        _foundResources.Clear();
-        Collider[] colliders = Physics.OverlapSphere(transform.position, _scanRange, LayerMask.GetMask(ResourceName));
-
-        foreach (Collider collider in colliders)
-        {
-            Resource currentResource = collider.GetComponent<Resource>();
-            if (currentResource != null && _selectedResources.Contains(currentResource) == false)
-            {
-                _foundResources.Add(currentResource);
-            }
-        }
-
-        ResourcesFound?.Invoke(_foundResources, transform.position);
-    }
-
     public bool IsResourcesEnough()
     {
         if (_resources.ContainsKey(ResourceType.Copper))
@@ -171,16 +109,7 @@ public class UnitBase : Spawnable
             return false;
     }
 
-    private void AddResource(ResourceType resourceType)
-    {
-        if (_resources.ContainsKey(resourceType) == false)
-            NewResourceEntered?.Invoke(resourceType, this);
-
-        _resources[resourceType].IncreaseCount();
-        ResourceCountChanged?.Invoke(_resources);
-    }
-
-    private Unit GetAvailableUnit()
+    public Unit GetAvailableUnit()
     {
         foreach (Unit unit in _units)
         {
@@ -193,9 +122,24 @@ public class UnitBase : Spawnable
         return null;
     }
 
-    private void OnWasFreed(Unit unit)
+    private void AddResource(ResourceType resourceType)
     {
-        UnitsCountChanged?.Invoke(_units);
+        if (_resources.ContainsKey(resourceType) == false)
+            NewResourceEntered?.Invoke(resourceType, this);
+
+        _resources[resourceType].IncreaseCount();
+        ResourceCountChanged?.Invoke(_resources);
+
+        if (_resources.ContainsKey(ResourceType.Copper))
+        {
+            if (_resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit)
+            {
+                if (HasFreeSpace())
+                {
+                    CopperEnough?.Invoke(this);
+                }
+            }
+        }
     }
 
     private void SendUnitToBunner()
@@ -209,7 +153,6 @@ public class UnitBase : Spawnable
     {
         newBasePosition.y = transform.position.y;
         _unitBaseCreator.UnitBaseCreated -= OnUnitBaseCreated;
-        _unitBaseCreator.WasFreed -= OnWasFreed;
         _unitBaseCreator.StartPosition.FreeUp();
         UnitBaseCreated?.Invoke(newBasePosition, _unitBaseCreator, _bunner);
         _units.Remove(_unitBaseCreator);

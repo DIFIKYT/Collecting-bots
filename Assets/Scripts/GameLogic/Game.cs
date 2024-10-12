@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,15 +7,14 @@ public class Game : MonoBehaviour
     [SerializeField] private BaseSpawner _baseSpawner;
     [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private UnitSpawner _unitSpawner;
-    [SerializeField] private UnitBaseUIManager _unitBaseUIPrefab;
-    [SerializeField] private Canvas _canvas;
     [SerializeField] private BunnerBuilder _bunnerBuilder;
+    [SerializeField] private UnitBaseUIManager _unitBaseUIManagerPrefab;
+    [SerializeField] private Scaner _scaner;
+    [SerializeField] private Canvas _canvas;
 
-    private readonly Dictionary<int, UnitBaseUIManager> _unitBasesUI = new();
-    private readonly Dictionary<UnitBaseUIManager, UnitBase> _unitBases = new();
-    private readonly int _minUnitsCountForPlaceBunner = 2;
-    private UnitBaseUIManager _currentUnitBaseUI;
-    private UnitBase _currentUnitBase;
+    private readonly Dictionary<UnitBase, UnitBaseUIManager> _unitBasesUI = new();
+    private readonly List<Resource> _selectedResources = new();
+    private readonly float _delay = 1;
 
     private void OnEnable()
     {
@@ -27,92 +26,81 @@ public class Game : MonoBehaviour
     {
         _baseSpawner.BaseSpawned -= OnUnitBaseSpawned;
 
-        foreach (UnitBaseUIManager unitBaseUIManager in _unitBasesUI.Values)
+        foreach (UnitBase unitBase in _unitBasesUI.Keys)
         {
-            ButtonManager buttonManager = unitBaseUIManager.ButtonManager;
-            buttonManager.ScanButton.onClick.RemoveListener(OnScanButtonPressed);
-            buttonManager.SendUnitButton.onClick.RemoveListener(OnSendUnitButtonPressed);
-            buttonManager.BuyUnitButton.onClick.RemoveListener(OnBuyUnitButtonPressed);
-            buttonManager.SetBunnerButton.onClick.RemoveListener(OnPlaceBunnerButtonPressed);
-        }
-
-        foreach (UnitBase unitBase in _unitBases.Values)
-        {
-            unitBase.BaseWasClicked -= OnBaseWasClicked;
+            unitBase.ResourceCountChanged -= _unitBasesUI[unitBase].OnResourceCountChanged;
+            unitBase.ResourceEntered -= OnResourceEnetered;
             unitBase.UnitBaseCreated -= OnUnitBaseCreated;
+            unitBase.BunnerMoved -= OnBunnerMove;
+            unitBase.CopperEnough -= OnCopperEnough;
+        }
+    }
+
+    private void Start()
+    {
+        StartCoroutine(SendUnitToResources());
+    }
+
+    private IEnumerator SendUnitToResources()
+    {
+        var delay = new WaitForSeconds(_delay);
+        Unit freeUnit;
+
+        while (true)
+        {
+            var resources = _scaner.Scan();
+
+            foreach (Resource resource in resources)
+            {
+                if (_selectedResources.Contains(resource) == false)
+                {
+                    foreach (UnitBase unitBase in _unitBasesUI.Keys)
+                    {
+                        freeUnit = unitBase.GetAvailableUnit();
+
+                        if (freeUnit != null)
+                        {
+                            freeUnit.MoveTo(resource.transform.position);
+                            freeUnit.SetResource(resource);
+                            _selectedResources.Add(resource);
+                        }
+                    }
+                }
+            }
+
+            yield return delay;
         }
     }
 
     private void OnUnitBaseSpawned(UnitBase unitBase)
     {
-        UnitBaseUIManager unitBaseUIManager = Instantiate(_unitBaseUIPrefab, _canvas.transform);
-        unitBaseUIManager.gameObject.SetActive(false);
+        Vector3 positionUI = new(unitBase.transform.position.x, unitBase.transform.position.y+6, unitBase.transform.position.z);
 
-        _unitBasesUI.Add(unitBase.Number, unitBaseUIManager);
-        _unitBases.Add(unitBaseUIManager, unitBase);
+        UnitBaseUIManager unitBaseUIManager = Instantiate(_unitBaseUIManagerPrefab, positionUI, unitBase.transform.rotation, _canvas.transform);
 
-        unitBase.BaseWasClicked += OnBaseWasClicked;
-        unitBase.ResourceCountChanged += unitBaseUIManager.OnChangeResources;
-        unitBase.ResourcesFound += unitBaseUIManager.OnChangeFoundResources;
-        unitBase.UnitsCountChanged += unitBaseUIManager.OnChangeUnitsInfo;
+        _unitBasesUI.Add(unitBase, unitBaseUIManager);
+
+        unitBase.ResourceCountChanged += _unitBasesUI[unitBase].OnResourceCountChanged;
+        unitBase.ResourceEntered += OnResourceEnetered;
         unitBase.UnitBaseCreated += OnUnitBaseCreated;
         unitBase.BunnerMoved += OnBunnerMove;
-
-        unitBaseUIManager.ButtonManager.ScanButton.onClick.AddListener(OnScanButtonPressed);
-        unitBaseUIManager.ButtonManager.SendUnitButton.onClick.AddListener(OnSendUnitButtonPressed);
-        unitBaseUIManager.ButtonManager.BuyUnitButton.onClick.AddListener(OnBuyUnitButtonPressed);
-        unitBaseUIManager.ButtonManager.SetBunnerButton.onClick.AddListener(OnPlaceBunnerButtonPressed);
+        unitBase.CopperEnough += OnCopperEnough;
     }
 
-    private void OnBaseWasClicked(int unitBaseNumber)
+    private void OnResourceEnetered(Resource resource)
     {
-        if (_currentUnitBaseUI != null)
-            _currentUnitBaseUI.gameObject.SetActive(false);
-
-        _currentUnitBaseUI = _unitBasesUI[unitBaseNumber];
-        _currentUnitBase = _unitBases[_currentUnitBaseUI];
-        _currentUnitBaseUI.gameObject.SetActive(true);
+        _resourceSpawner.ReturnToPool(resource);
+        _selectedResources.Remove(resource);
     }
 
-    private void OnScanButtonPressed()
+    private void OnBunnerPlaced(UnitBase unitBase, Bunner bunner)
     {
-        _currentUnitBase.Scan();
+        unitBase.TakeBunner(bunner);
     }
 
-    private void OnSendUnitButtonPressed()
+    private void OnBunnerMove(Bunner bunner)
     {
-        _currentUnitBase.SendUnitToResource();
-    }
-
-    private void OnBuyUnitButtonPressed()
-    {
-        if (_currentUnitBase.CanBuyUnit)
-        {
-            if (_currentUnitBase.IsResourcesEnough())
-            {
-                if (_currentUnitBase.HasFreeSpace())
-                {
-                    _currentUnitBase.AddUnit(_unitSpawner.SpawnUnit());
-                }
-                else
-                {
-                    Debug.Log("No free positions");
-                }
-            }
-        }
-    }
-
-    private void OnPlaceBunnerButtonPressed()
-    {
-        if (_currentUnitBase.CanMoveBunner && _currentUnitBase.UnitsCount >= _minUnitsCountForPlaceBunner)
-        {
-            _bunnerBuilder.PlaceBunnerPreview();
-        }
-    }
-
-    private void OnBunnerPlaced(Bunner bunner)
-    {
-        _currentUnitBase.TakeBunner(bunner);
+        _bunnerBuilder.DestroyBunner(bunner);
     }
 
     private void OnUnitBaseCreated(Vector3 newBaseSpawnPosition, Unit unit, Bunner bunner)
@@ -122,8 +110,8 @@ public class Game : MonoBehaviour
         _bunnerBuilder.DestroyBunner(bunner);
     }
 
-    private void OnBunnerMove(Bunner bunner)
+    private void OnCopperEnough(UnitBase unitBase)
     {
-        _bunnerBuilder.DestroyBunner(bunner);
+        unitBase.AddUnit(_unitSpawner.SpawnUnit());
     }
 }

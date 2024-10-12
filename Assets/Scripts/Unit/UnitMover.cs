@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class UnitMover : MonoBehaviour
 {
-    private const float RotateSpeed = 360f;
     private const float DistanceFromTargetPosition = 0.01f;
 
     public void MoveUnitToBunner(MovementData movementData, Vector3 bunnerPosition, Action onComplete)
@@ -19,7 +18,7 @@ public class UnitMover : MonoBehaviour
 
     private IEnumerator MoveToBunner(MovementData movementData, Vector3 bunnerPosition, Action onComplete)
     {
-        yield return RotateTo(movementData.UnitTransform, bunnerPosition);
+        yield return RotateTo(movementData.UnitTransform, bunnerPosition, movementData.RotateSpeed);
         yield return MoveTo(movementData.UnitTransform, bunnerPosition, movementData.MoveSpeed);
         onComplete?.Invoke();
     }
@@ -35,7 +34,7 @@ public class UnitMover : MonoBehaviour
 
     private IEnumerator RotateAndMove(MovementData movementData, Vector3 targetPosition)
     {
-        yield return RotateTo(movementData.UnitTransform, targetPosition);
+        yield return RotateTo(movementData.UnitTransform, targetPosition, movementData.RotateSpeed);
         yield return MoveTo(movementData.UnitTransform, targetPosition, movementData.MoveSpeed);
     }
 
@@ -48,14 +47,14 @@ public class UnitMover : MonoBehaviour
         }
     }
 
-    private IEnumerator RotateTo(Transform unitTransform, Vector3 targetPosition)
+    private IEnumerator RotateTo(Transform unitTransform, Vector3 targetPosition, float rotateSpeed)
     {
         Vector3 direction = (targetPosition - unitTransform.position).normalized;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
         while (Quaternion.Angle(unitTransform.rotation, targetRotation) > DistanceFromTargetPosition)
         {
-            unitTransform.rotation = Quaternion.RotateTowards(unitTransform.rotation, targetRotation, RotateSpeed * Time.deltaTime);
+            unitTransform.rotation = Quaternion.RotateTowards(unitTransform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
             yield return null;
         }
     }

@@ -152,7 +152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 038c2f5f0565dc54aac059774f0c2ffa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _unitPrefab: {fileID: 3345094634068511652, guid: 951dcb281f6d5ee4bb2f1b4fadb3210c, type: 3}
   _unitSpawnPositions:
   - {fileID: 4648298226643842487}
   - {fileID: 1445400957703861912}
@@ -160,7 +159,6 @@ MonoBehaviour:
   - {fileID: 1542926449381191981}
   - {fileID: 8230981158230378676}
   - {fileID: 2335756396311935464}
-  _scanRange: 30
 --- !u!1001 &321974696885042638
 PrefabInstance:
   m_ObjectHideFlags: 0

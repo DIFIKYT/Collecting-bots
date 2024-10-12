@@ -9,27 +9,13 @@ public class BunnerBuilder : MonoBehaviour
     [SerializeField] private PreviewBunner _bunnerPreview;
     [SerializeField] private LayerMask _groundLayer;
 
-    private bool _isPlacing;
+    public bool IsPlacing { get; private set; }
 
-    public event Action<Bunner> BunnerPlaced;
+    public event Action<UnitBase, Bunner> BunnerPlaced;
 
     private void Start()
     {
         _bunnerPreview.Disable();
-    }
-
-    public void PlaceBunnerPreview()
-    {
-        if (_isPlacing)
-        {
-            CancelPlacement();
-            StopCoroutine(MoveBunnerPreview());
-        }
-        else
-        {
-            StartPlacement();
-            StartCoroutine(MoveBunnerPreview());
-        }
     }
 
     public void DestroyBunner(Bunner bunner)
@@ -37,19 +23,21 @@ public class BunnerBuilder : MonoBehaviour
         Destroy(bunner.gameObject);
     }
 
-    private void StartPlacement()
+    public void StartPlacement()
     {
-        _isPlacing = true;
+        IsPlacing = true;
         _bunnerPreview.Enable();
+        StartCoroutine(MoveBunnerPreview());
     }
 
-    private void CancelPlacement()
+    public void CancelPlacement()
     {
-        _isPlacing = false;
+        IsPlacing = false;
         _bunnerPreview.Disable();
+        StopCoroutine(MoveBunnerPreview());
     }
 
-    private void PlaceBunner()
+    public void PlaceBunner(UnitBase unitBase)
     {
         Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
 
@@ -57,38 +45,24 @@ public class BunnerBuilder : MonoBehaviour
         {
             CancelPlacement();
             Bunner bunner = Instantiate(_bunnerPrefab, hit.point, Quaternion.identity);
-            BunnerPlaced?.Invoke(bunner);
+            BunnerPlaced?.Invoke(unitBase, bunner);
         }
     }
 
     private IEnumerator MoveBunnerPreview()
     {
         Ray ray;
-        RaycastHit hit;
 
-        while (_isPlacing)
+        while (IsPlacing)
         {
             ray = _camera.ScreenPointToRay(Input.mousePosition);
 
-            if (Physics.Raycast(ray, out hit, Mathf.Infinity, _groundLayer))
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, _groundLayer))
             {
                 _bunnerPreview.transform.position = hit.point;
-                MouseInput();
             }
 
             yield return null;
-        }
-    }
-
-    private void MouseInput()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            PlaceBunner();
-        }
-        else if (Input.GetMouseButtonDown(1))
-        {
-            CancelPlacement();
         }
     }
 }

@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: UnitConfig
   m_EditorClassIdentifier: 
   _moveSpeed: 10
-  _basePosition: {x: 0, y: 0.5, z: 0}
+  _rotateSpeed: 360

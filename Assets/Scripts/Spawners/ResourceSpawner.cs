@@ -16,11 +16,6 @@ public class ResourceSpawner : Spawner<Resource>
         StartCoroutine(SpawnCoroutine());
     }
 
-    public void ReturnToPool(Resource resource)
-    {
-        Pool.Release(resource);
-    }
-
     protected override Resource Create()
     {
         return Instantiate(Prefabs[Random.Range(0, Prefabs.Count)], transform);
@@ -44,7 +39,7 @@ public class ResourceSpawner : Spawner<Resource>
         bool isPositionFree;
         float randomXPosition;
         float randomZPosition;
-        float lengthRadiusCheck = 1f;
+        float lengthRadiusCheck = 5f;
         float halfScaleXGround = _ground.transform.localScale.x / ScaleDivisionFactor;
         float halfScaleZGround = _ground.transform.localScale.z / ScaleDivisionFactor;
 

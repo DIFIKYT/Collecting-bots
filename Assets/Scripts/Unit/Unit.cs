@@ -27,12 +27,12 @@ public class Unit : Spawnable
 
     private void OnEnable()
     {
-        _unitTrigger.ResourceDetected += OnTakeResource;
+        _unitTrigger.ResourceDetected += OnResourceDetected;
     }
 
     private void OnDisable()
     {
-        _unitTrigger.ResourceDetected -= OnTakeResource;
+        _unitTrigger.ResourceDetected -= OnResourceDetected;
     }
 
     public void MoveTo(Vector3 targetPosition, Bunner bunner = null)
@@ -40,7 +40,7 @@ public class Unit : Spawnable
         MovementData movementData;
 
         targetPosition.y = StartPosition.transform.position.y;
-        movementData = new(transform, targetPosition, _basePosition, StartPosition.transform.position, _config.MoveSpeed);
+        movementData = new(transform, targetPosition, _basePosition, StartPosition.transform.position, _config.MoveSpeed, _config.RotateSpeed);
 
         if (bunner != null)
         {
@@ -92,7 +92,7 @@ public class Unit : Spawnable
         _isBusy = true;
     }
 
-    private void OnTakeResource(Resource resource)
+    private void OnResourceDetected(Resource resource)
     {
         if (_canTake == false || resource != _resource)
             return;
@@ -100,8 +100,8 @@ public class Unit : Spawnable
         IsResourceTaked = true;
         _isBusy = true;
         _canTake = false;
-        resource.transform.SetParent(transform, worldPositionStays: false);
         Vector3 offset = transform.position + transform.forward * ResourceOffsetDistance;
+        resource.transform.SetParent(transform, worldPositionStays: false);
         resource.transform.SetPositionAndRotation(offset, transform.rotation);
     }
 
