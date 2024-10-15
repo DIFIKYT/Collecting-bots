@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -20,11 +19,6 @@ public abstract class Spawner<T> : MonoBehaviour where T : Spawnable
             defaultCapacity: DefaultCapacity,
             maxSize: MaxSize);
     }
-
-    //protected virtual T Create()
-    //{
-    //    return Instantiate(_prefabs[0], transform);
-    //}
 
     protected virtual void OnGet(T spawnable)
     {
