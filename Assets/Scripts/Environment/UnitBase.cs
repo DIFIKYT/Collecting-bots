@@ -11,6 +11,7 @@ public class UnitBase : Spawnable
     private readonly Dictionary<ResourceType, Counter> _resources = new();
     private readonly int _copperAmountForBuyUnit = 3;
     private readonly int _ironAmountForBuyBase = 5;
+    private readonly int _minUnitsCountForBuildBase = 2;
     private Bunner _bunner;
     private Unit _unitBaseCreator;
 
@@ -21,8 +22,6 @@ public class UnitBase : Spawnable
     public event Action<Bunner> BunnerMoved;
     public event Action<UnitBase> CopperEnough;
 
-    public List<Unit> Units => _units;
-    public int Number { get; private set; }
     public bool CanMoveBunner { get; private set; }
     public bool CanBuyUnit { get; private set; }
 
@@ -52,17 +51,12 @@ public class UnitBase : Spawnable
             BunnerMoved?.Invoke(_bunner);
 
         _bunner = bunner;
-        StartCoroutine(WaitUnit());
+        StartCoroutine(WaitResource());
     }
 
-    public void TakeDictionary(ResourceType resourceType, Counter counter)
+    public void AddResourceToDictionary(ResourceType resourceType, Counter counter)
     {
         _resources.Add(resourceType, counter);
-    }
-
-    public void TakeNumber(int number)
-    {
-        Number = number;
     }
 
     public void AddUnit(Unit unit)
@@ -164,25 +158,18 @@ public class UnitBase : Spawnable
 
     private IEnumerator WaitResource()
     {
-        if (_resources.ContainsKey(ResourceType.Iron) == false)
-        {
-            while (_resources.ContainsKey(ResourceType.Iron) == false)
-            {
-                yield return null;
-            }
-        }
-
-        while (_resources[ResourceType.Iron].Count < _ironAmountForBuyBase)
-        {
+        while (_resources.ContainsKey(ResourceType.Iron) == false || _resources[ResourceType.Iron].Count < _ironAmountForBuyBase)
             yield return null;
-        }
 
         CanMoveBunner = false;
-        SendUnitToBunner();
+        StartCoroutine(WaitUnit());
     }
 
     private IEnumerator WaitUnit()
     {
+        while (_units.Count < _minUnitsCountForBuildBase)
+            yield return null;
+
         while (_unitBaseCreator == null)
         {
             _unitBaseCreator = GetAvailableUnit();
@@ -192,6 +179,6 @@ public class UnitBase : Spawnable
         _unitBaseCreator.UnitBaseCreated += OnUnitBaseCreated;
         _unitBaseCreator.Occupy();
         CanBuyUnit = false;
-        StartCoroutine(WaitResource());
+        SendUnitToBunner();
     }
 }

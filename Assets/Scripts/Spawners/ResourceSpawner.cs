@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ResourceSpawner : Spawner<Resource>
@@ -10,6 +11,7 @@ public class ResourceSpawner : Spawner<Resource>
     [SerializeField] private Ground _ground;
     [SerializeField] private float _spawnDelay;
     [SerializeField] private float _spawnHeight;
+    [SerializeField] private List<Resource> _resourcesPrefab;
 
     private void Start()
     {
@@ -18,7 +20,7 @@ public class ResourceSpawner : Spawner<Resource>
 
     protected override Resource Create()
     {
-        return Instantiate(Prefabs[Random.Range(0, Prefabs.Count)], transform);
+        return Instantiate(_resourcesPrefab[Random.Range(0, _resourcesPrefab.Count)], transform);
     }
 
     protected override void OnGet(Resource resource)

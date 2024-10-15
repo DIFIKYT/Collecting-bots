@@ -1,21 +1,23 @@
 using UnityEngine;
 
-public class InputManager : MonoBehaviour
+public class PlayerInput : MonoBehaviour
 {
+    private const int NumberLeftMouseButton = 0;
+    private const int NumberRightMouseButton = 1;
+
     [SerializeField] private Camera _camera;
     [SerializeField] private BunnerBuilder _bunnerBuilder;
 
-    private readonly int _minUnitsCountForPlaceBunner = 2;
     private UnitBase _selectedBase;
 
-    void Update()
+    private void Update()
     {
         HandleMouseInput();
     }
 
     private void HandleMouseInput()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(NumberLeftMouseButton))
         {
             if (_selectedBase == null)
             {
@@ -23,7 +25,7 @@ public class InputManager : MonoBehaviour
             }
             else
             {
-                if(_selectedBase.Units.Count >= _minUnitsCountForPlaceBunner && _selectedBase.CanMoveBunner)
+                if(_selectedBase.CanMoveBunner)
                 {
                     if (_bunnerBuilder.IsPlacing)
                     {
@@ -41,7 +43,7 @@ public class InputManager : MonoBehaviour
                 }
             }
         }
-        else if (Input.GetMouseButtonDown(1))
+        else if (Input.GetMouseButtonDown(NumberRightMouseButton))
         {
             _bunnerBuilder.CancelPlacement();
             _selectedBase = null;

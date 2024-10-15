@@ -5,10 +5,10 @@ public class BaseSpawner : Spawner<UnitBase>
 {
     [SerializeField] private UnitSpawner _unitSpawner;
     [SerializeField] private Vector3 _firstBaseSpawnCoordinate;
+    [SerializeField] private UnitBase _unitBasePrefab;
 
     private readonly int _unitsCountForFirstBase = 3;
     private bool _isFirstBase = true;
-    private int _unitBaseNumber;
     private Vector3 _spawnPosition;
 
     public event Action<UnitBase> BaseSpawned;
@@ -26,18 +26,12 @@ public class BaseSpawner : Spawner<UnitBase>
 
     protected override UnitBase Create()
     {
-        UnitBase unitBase = base.Create();
-
-        unitBase.TakeNumber(_unitBaseNumber);
-
-        _unitBaseNumber++;
-
-        return unitBase;
+        return Instantiate(_unitBasePrefab, transform);
     }
 
     protected override void OnGet(UnitBase unitBase)
     {
-        unitBase.NewResourceEntered += GetDictionary;
+        unitBase.NewResourceEntered += OnNewResourceEntered;
         unitBase.transform.position = _spawnPosition;
         base.OnGet(unitBase);
         BaseSpawned?.Invoke(unitBase);
@@ -55,14 +49,14 @@ public class BaseSpawner : Spawner<UnitBase>
 
     protected override void OnRelease(UnitBase unitBase)
     {
-        unitBase.NewResourceEntered -= GetDictionary;
+        unitBase.NewResourceEntered -= OnNewResourceEntered;
         unitBase.transform.SetParent(transform, worldPositionStays: false);
         base.OnRelease(unitBase);
     }
 
-    private void GetDictionary(ResourceType resourceType, UnitBase unitBase)
+    private void OnNewResourceEntered(ResourceType resourceType, UnitBase unitBase)
     {
         Counter _counter = new(0);
-        unitBase.TakeDictionary(resourceType, _counter);
+        unitBase.AddResourceToDictionary(resourceType, _counter);
     }
 }

@@ -7,10 +7,7 @@ public abstract class Spawner<T> : MonoBehaviour where T : Spawnable
     private const int DefaultCapacity = 100;
     private const int MaxSize = 100;
 
-    [SerializeField] private List<T> _prefabs;
-
     protected ObjectPool<T> Pool { get; private set; }
-    protected List<T> Prefabs => _prefabs;
 
     private void Awake()
     {
@@ -24,10 +21,10 @@ public abstract class Spawner<T> : MonoBehaviour where T : Spawnable
             maxSize: MaxSize);
     }
 
-    protected virtual T Create()
-    {
-        return Instantiate(_prefabs[0], transform);
-    }
+    //protected virtual T Create()
+    //{
+    //    return Instantiate(_prefabs[0], transform);
+    //}
 
     protected virtual void OnGet(T spawnable)
     {
@@ -48,4 +45,6 @@ public abstract class Spawner<T> : MonoBehaviour where T : Spawnable
     {
         Pool.Release(spawnable);
     }
+
+    protected abstract T Create();
 }

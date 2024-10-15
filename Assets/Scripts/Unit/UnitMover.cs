@@ -40,7 +40,7 @@ public class UnitMover : MonoBehaviour
 
     private IEnumerator MoveTo(Transform unitTransform, Vector3 targetPosition, float moveSpeed)
     {
-        while (Vector3.Distance(unitTransform.position, targetPosition) > DistanceFromTargetPosition)
+        while ((targetPosition - unitTransform.position).sqrMagnitude > DistanceFromTargetPosition)
         {
             unitTransform.position = Vector3.MoveTowards(unitTransform.position, targetPosition, moveSpeed * Time.deltaTime);
             yield return null;

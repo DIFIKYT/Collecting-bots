@@ -8,11 +8,11 @@ public class Game : MonoBehaviour
     [SerializeField] private ResourceSpawner _resourceSpawner;
     [SerializeField] private UnitSpawner _unitSpawner;
     [SerializeField] private BunnerBuilder _bunnerBuilder;
-    [SerializeField] private UnitBaseUIManager _unitBaseUIManagerPrefab;
+    [SerializeField] private UnitBaseUI _unitBaseUIManagerPrefab;
     [SerializeField] private Scaner _scaner;
     [SerializeField] private Canvas _canvas;
 
-    private readonly Dictionary<UnitBase, UnitBaseUIManager> _unitBasesUI = new();
+    private readonly Dictionary<UnitBase, UnitBaseUI> _unitBasesUI = new();
     private readonly List<Resource> _selectedResources = new();
     private readonly float _delay = 1;
 
@@ -63,6 +63,7 @@ public class Game : MonoBehaviour
                             freeUnit.MoveTo(resource.transform.position);
                             freeUnit.SetResource(resource);
                             _selectedResources.Add(resource);
+                            break;
                         }
                     }
                 }
@@ -76,7 +77,7 @@ public class Game : MonoBehaviour
     {
         Vector3 positionUI = new(unitBase.transform.position.x, unitBase.transform.position.y+6, unitBase.transform.position.z);
 
-        UnitBaseUIManager unitBaseUIManager = Instantiate(_unitBaseUIManagerPrefab, positionUI, unitBase.transform.rotation, _canvas.transform);
+        UnitBaseUI unitBaseUIManager = Instantiate(_unitBaseUIManagerPrefab, positionUI, unitBase.transform.rotation, _canvas.transform);
 
         _unitBasesUI.Add(unitBase, unitBaseUIManager);
 
