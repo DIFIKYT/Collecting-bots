@@ -31,6 +31,16 @@ public class UnitBase : Spawnable
         CanMoveBunner = true;
     }
 
+    private void OnEnable()
+    {
+        ResourceEntered += OnResourceEntered;
+    }
+
+    private void OnDisable()
+    {
+        ResourceEntered -= OnResourceEntered;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out Unit unit))
@@ -39,7 +49,7 @@ public class UnitBase : Spawnable
 
             if (resource != null && unit.IsResourceTaked && _units.Contains(unit))
             {
-                AddResource(resource.Type);
+                //AddResource(resource.Type);
                 ResourceEntered?.Invoke(unit.GetResource());
             }
         }
@@ -71,36 +81,9 @@ public class UnitBase : Spawnable
                 unit.TakeBasePosition(transform.position);
                 _units.Add(unit);
 
-                if (IsResourcesEnough())
-                {
-                    _resources[ResourceType.Copper].DecreaseCount(_copperAmountForBuyUnit);
-                    ResourceCountChanged?.Invoke(_resources);
-                }
-
                 return;
             }
         }
-    }
-
-    public bool HasFreeSpace()
-    {
-        foreach (UnitSpawnPosition spawnPosition in _unitSpawnPositions)
-        {
-            if (spawnPosition.IsOccupied == false)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public bool IsResourcesEnough()
-    {
-        if (_resources.ContainsKey(ResourceType.Copper))
-            return _resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit;
-        else
-            return false;
     }
 
     public Unit GetAvailableUnit()
@@ -116,24 +99,36 @@ public class UnitBase : Spawnable
         return null;
     }
 
-    private void AddResource(ResourceType resourceType)
+    private bool HasFreeSpace()
     {
-        if (_resources.ContainsKey(resourceType) == false)
-            NewResourceEntered?.Invoke(resourceType, this);
-
-        _resources[resourceType].IncreaseCount();
-        ResourceCountChanged?.Invoke(_resources);
-
-        if (_resources.ContainsKey(ResourceType.Copper))
+        foreach (UnitSpawnPosition spawnPosition in _unitSpawnPositions)
         {
-            if (_resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit)
+            if (spawnPosition.IsOccupied == false)
             {
-                if (HasFreeSpace())
-                {
-                    CopperEnough?.Invoke(this);
-                }
+                return true;
             }
         }
+
+        return false;
+    }
+
+    private void OnResourceEntered(Resource resource)
+    {
+        if (_resources.ContainsKey(resource.Type) == false)
+            NewResourceEntered?.Invoke(resource.Type, this);
+
+        _resources[resource.Type].IncreaseCount();
+
+        if (_resources.ContainsKey(ResourceType.Copper) && _resources[ResourceType.Copper].Count >= _copperAmountForBuyUnit)
+        {
+            if (HasFreeSpace())
+            {
+                _resources[ResourceType.Copper].DecreaseCount(_copperAmountForBuyUnit);
+                CopperEnough?.Invoke(this);
+            }
+        }
+
+        ResourceCountChanged?.Invoke(_resources);
     }
 
     private void SendUnitToBunner()
