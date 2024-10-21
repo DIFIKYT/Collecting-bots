@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class UnitBase : Spawnable
 {
@@ -49,7 +50,6 @@ public class UnitBase : Spawnable
 
             if (resource != null && unit.IsResourceTaked && _units.Contains(unit))
             {
-                //AddResource(resource.Type);
                 ResourceEntered?.Invoke(unit.GetResource());
             }
         }
